@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; }
+  button, input, select, textarea { font-family: inherit; }
+  select { -webkit-appearance: none; appearance: none; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #d8cfc2; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes ac-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+  @keyframes ac-fade { from{opacity:0} to{opacity:1} }
+  @keyframes ac-slide { from{transform:translateX(30px); opacity:0} to{transform:translateX(0); opacity:1} }
+  @keyframes ac-pop { from{transform:translateY(12px) scale(.98); opacity:0} to{transform:translateY(0) scale(1); opacity:1} }
+</style>
+</helmet>
+
+<div style="height:100%; min-height:100%; background:#e7ded2; color:#2b2622; display:flex;">
+
+  <!-- ===================== LOGIN ===================== -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px;">
+    <div style="width:100%; max-width:420px; background:#f7f4ef; border-radius:24px; padding:44px 40px; box-shadow:0 24px 60px rgba(60,45,30,.2);" class="{{ shakeClass }}">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:32px;">
+        <img src="assets/song-logo.png" alt="Song Art & Craft" style="width:44px; height:44px; border-radius:12px; object-fit:cover;">
+        <div>
+          <p style="margin:0; font-family:'Instrument Serif',serif; font-size:22px; line-height:1.12;">{{ shopName }}</p>
+          <p style="margin:6px 0 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#a89e92; font-weight:700;">Admin Console</p>
+        </div>
+      </div>
+      <h1 style="margin:0 0 6px; font-size:24px; font-weight:800;">Sign in</h1>
+      <p style="margin:0 0 26px; font-size:14px; color:#9a9088;">Manage staff, passkeys and every purchase.</p>
+
+      <label style="display:block; font-size:13px; font-weight:700; color:#6b625a; margin:0 2px 7px;">Admin ID</label>
+      <input value="{{ adminId }}" onChange="{{ onAdminId }}" placeholder="admin@songartcraft.com" style="width:100%; padding:14px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:15px; margin-bottom:16px;">
+      <label style="display:block; font-size:13px; font-weight:700; color:#6b625a; margin:0 2px 7px;">Password</label>
+      <input value="{{ adminPw }}" onChange="{{ onAdminPw }}" type="password" placeholder="••••••••" style="width:100%; padding:14px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:15px; margin-bottom:8px;">
+      <div style="height:20px; margin-bottom:6px;">
+        <sc-if value="{{ hasLoginError }}" hint-placeholder-val="{{ false }}"><p style="margin:0; font-size:13px; color:#c0392b; font-weight:600;">{{ loginError }}</p></sc-if>
+      </div>
+      <button onClick="{{ doLogin }}" style="width:100%; padding:15px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(210,77,132,.3);">Enter console</button>
+      <p style="margin:20px 0 0; font-size:12px; color:#c0b8ac; text-align:center;">Song Art &amp; Craft admin access</p>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1; display:flex; height:100%; min-width:0;">
+
+    <!-- Sidebar -->
+    <aside style="width:250px; flex-shrink:0; background:#2b2622; color:#e9e2d8; display:flex; flex-direction:column; padding:24px 16px;">
+      <div style="display:flex; align-items:center; gap:11px; padding:4px 8px 26px;">
+        <img src="assets/song-logo.png" alt="Song Art & Craft" style="width:40px; height:40px; border-radius:11px; object-fit:cover;">
+        <div>
+          <p style="margin:0; font-family:'Instrument Serif',serif; font-size:19px; line-height:1.12; color:#fff;">{{ shopName }}</p>
+          <p style="margin:5px 0 0; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#8a8073; font-weight:700;">Admin Console</p>
+        </div>
+      </div>
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <button onClick="{{ n.onClick }}" style="{{ n.style }}">
+          <span style="display:inline-flex;" dangerouslySetInnerHTML="{{ n.icon }}"></span>
+          <span style="font-size:14.5px; font-weight:600;">{{ n.label }}</span>
+          <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto; font-size:12px; font-weight:700; background:rgba(255,255,255,.14); padding:2px 8px; border-radius:999px;">{{ n.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+      <div style="flex:1;"></div>
+      <div style="background:rgba(255,255,255,.06); border-radius:14px; padding:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:#d24d84; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;">A</div>
+          <div style="min-width:0;">
+            <p style="margin:0; font-size:13.5px; font-weight:700; color:#fff;">Administrator</p>
+            <p style="margin:1px 0 0; font-size:11.5px; color:#9a9082; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ adminId }}</p>
+          </div>
+        </div>
+        <button onClick="{{ logout }}" style="width:100%; margin-top:12px; padding:9px; border-radius:9px; border:1px solid rgba(255,255,255,.14); background:none; color:#e9e2d8; font-size:13px; font-weight:600; cursor:pointer;">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main style="flex:1; min-width:0; display:flex; flex-direction:column; background:#f4f0ea;">
+      <header style="display:flex; align-items:center; justify-content:space-between; padding:22px 34px; border-bottom:1px solid #e6ded2; background:#f7f4ef;">
+        <div>
+          <h1 style="margin:0; font-size:23px; font-weight:800;">{{ pageTitle }}</h1>
+          <p style="margin:4px 0 0; font-size:13.5px; color:#9a9088;">{{ pageSub }}</p>
+        </div>
+        <sc-if value="{{ showAddUser }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openAddEmp }}" style="display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add user
+          </button>
+        </sc-if>
+      </header>
+
+      <div style="flex:1; overflow-y:auto; padding:30px 34px 60px;">
+
+        <!-- OVERVIEW -->
+        <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:30px;">
+            <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+              <div style="background:#fff; border-radius:18px; padding:22px; box-shadow:0 2px 10px rgba(60,45,30,.05);">
+                <p style="margin:0; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#a89e92; font-weight:700;">{{ s.label }}</p>
+                <p style="margin:10px 0 0; font-family:'Instrument Serif',serif; font-size:38px; line-height:1; color:{{ s.color }};">{{ s.value }}</p>
+                <p style="margin:6px 0 0; font-size:13px; color:#9a9088;">{{ s.sub }}</p>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(60,45,30,.05); overflow:hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid #f0ebe3;">
+              <h2 style="margin:0; font-size:16px; font-weight:800;">Recent purchases</h2>
+              <button onClick="{{ goPurchases }}" style="border:none; background:none; color:#d24d84; font-weight:700; font-size:13.5px; cursor:pointer;">View all</button>
+            </div>
+            <sc-for list="{{ recent }}" as="r" hint-placeholder-count="5">
+              <button onClick="{{ r.onView }}" style="width:100%; display:grid; grid-template-columns:2fr 1.4fr 1fr 1fr 1.1fr; align-items:center; gap:12px; padding:14px 22px; border:none; border-top:1px solid #f4efe8; background:none; cursor:pointer; text-align:left;">
+                <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                  <div style="width:40px; height:40px; border-radius:9px; overflow:hidden; background:repeating-linear-gradient(45deg,#efe7db,#efe7db 5px,#f6f0e6 5px,#f6f0e6 10px); flex-shrink:0;"><sc-if value="{{ r.hasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ r.photo }}" style="width:100%;height:100%;object-fit:cover;"></sc-if></div>
+                  <span style="font-size:14px; font-weight:700;">{{ r.category }}</span>
+                </div>
+                <span style="font-size:13.5px; color:#6b625a;">{{ r.employee }}</span>
+                <span style="font-size:14px; font-weight:700; color:#d24d84;">{{ r.priceLabel }}</span>
+                <span style="font-size:13.5px; color:#6b625a;">{{ r.payment }}</span>
+                <span style="font-size:13px; color:#9a9088; text-align:right;">{{ r.dateLabel }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- EMPLOYEES -->
+        <sc-if value="{{ isEmployees }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(60,45,30,.05); overflow:hidden;">
+            <div style="display:grid; grid-template-columns:2fr 2.2fr 1.2fr 1fr 1fr 1fr; gap:12px; padding:14px 22px; background:#faf7f2; border-bottom:1px solid #f0ebe3; font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:#a89e92; font-weight:700;">
+              <span>Employee</span><span>Contact</span><span>Passkey</span><span>Role</span><span>Status</span><span style="text-align:right;">Actions</span>
+            </div>
+            <sc-for list="{{ empRows }}" as="e" hint-placeholder-count="3">
+              <div style="display:grid; grid-template-columns:2fr 2.2fr 1.2fr 1fr 1fr 1fr; gap:12px; align-items:center; padding:15px 22px; border-top:1px solid #f4efe8;">
+                <div style="display:flex; align-items:center; gap:11px; min-width:0;">
+                  <div style="width:38px; height:38px; border-radius:50%; background:#fbe4ef; color:#a83168; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;">{{ e.initials }}</div>
+                  <div style="min-width:0;"><p style="margin:0; font-size:14.5px; font-weight:700;">{{ e.name }}</p></div>
+                </div>
+                <div style="min-width:0;">
+                  <p style="margin:0; font-size:13px; color:#4a423a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ e.email }}</p>
+                  <p style="margin:2px 0 0; font-size:12.5px; color:#9a9088;">{{ e.phone }}</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:7px;">
+                  <span style="font-family:ui-monospace,'SF Mono',monospace; font-size:14px; font-weight:700; letter-spacing:.06em; color:#2b2622;">{{ e.codeLabel }}</span>
+                  <button onClick="{{ e.onReveal }}" aria-label="Reveal" style="border:none; background:none; cursor:pointer; padding:2px; color:#b3aa9f; display:inline-flex;" dangerouslySetInnerHTML="{{ e.eyeIcon }}"></button>
+                </div>
+                <span style="font-size:13.5px; color:#6b625a;">{{ e.role }}</span>
+                <span style="{{ e.statusStyle }}">{{ e.status }}</span>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                  <button onClick="{{ e.onEdit }}" aria-label="Edit" style="width:34px; height:34px; border-radius:9px; border:1px solid #e9e3da; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6b625a;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
+                  <button onClick="{{ e.onDelete }}" aria-label="Delete" style="width:34px; height:34px; border-radius:9px; border:1px solid #e7c9bf; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#c0392b;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg></button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- MAKERS (Made by) -->
+        <sc-if value="{{ isMakers }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:720px;">
+            <div style="background:#fff; border-radius:18px; padding:22px; box-shadow:0 2px 10px rgba(60,45,30,.05); margin-bottom:18px;">
+              <h2 style="margin:0 0 4px; font-size:16px; font-weight:800;">Add a maker</h2>
+              <p style="margin:0 0 16px; font-size:13.5px; color:#9a9088;">Names added here appear in the staff app's "Made by" dropdown. The default workshop is Song Art &amp; Craft.</p>
+              <div style="display:flex; gap:10px;">
+                <input value="{{ newMaker }}" onChange="{{ onNewMaker }}" placeholder="Employee or maker name…" style="flex:1; padding:13px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;">
+                <button onClick="{{ addMaker }}" style="display:inline-flex; align-items:center; gap:8px; padding:13px 20px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+              </div>
+            </div>
+            <div style="background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(60,45,30,.05); overflow:hidden;">
+              <div style="display:grid; grid-template-columns:2fr 1fr 0.6fr; gap:12px; padding:14px 22px; background:#faf7f2; border-bottom:1px solid #f0ebe3; font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:#a89e92; font-weight:700;">
+                <span>Maker</span><span>Attributed</span><span style="text-align:right;">Remove</span>
+              </div>
+              <sc-for list="{{ makerRows }}" as="m" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:2fr 1fr 0.6fr; gap:12px; align-items:center; padding:15px 22px; border-top:1px solid #f4efe8;">
+                  <div style="display:flex; align-items:center; gap:11px;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#fbe4ef; color:#a83168; display:flex; align-items:center; justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.6 2.2 1.6 4.4 0 6.6C10.4 7.4 10.4 5.2 12 3z"/><path d="M12 9.6a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4z"/><path d="M12 18v3"/></svg></div>
+                    <span style="font-size:14.5px; font-weight:700;">{{ m.name }}</span>
+                    <sc-if value="{{ m.isDefault }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px; font-weight:700; color:#a83168; background:#fbe4ef; padding:3px 10px; border-radius:999px;">Default</span></sc-if>
+                  </div>
+                  <span style="font-size:13.5px; color:#6b625a;">{{ m.count }}</span>
+                  <div style="text-align:right;">
+                    <sc-if value="{{ m.notDefault }}" hint-placeholder-val="{{ true }}"><button onClick="{{ m.onDelete }}" aria-label="Remove" style="width:34px; height:34px; border-radius:9px; border:1px solid #e7c9bf; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#c0392b;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg></button></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- PURCHASES -->
+        <sc-if value="{{ isPurchases }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:700; color:#b3aa9f;">Made by</span>
+            <sc-for list="{{ makerFilterChips }}" as="mc" hint-placeholder-count="4">
+              <button onClick="{{ mc.onClick }}" style="{{ mc.style }}">{{ mc.label }}</button>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(60,45,30,.05); overflow:hidden;">
+            <div style="display:grid; grid-template-columns:1.8fr 1.2fr 1.2fr 0.9fr 0.7fr 1fr 1.1fr 0.6fr; gap:12px; padding:14px 22px; background:#faf7f2; border-bottom:1px solid #f0ebe3; font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:#a89e92; font-weight:700;">
+              <span>Product</span><span>Made by</span><span>Employee</span><span>Amount</span><span>Qty</span><span>Payment</span><span>Date</span><span style="text-align:right;">View</span>
+            </div>
+            <sc-for list="{{ purchRows }}" as="r" hint-placeholder-count="4">
+              <button onClick="{{ r.onView }}" style="width:100%; display:grid; grid-template-columns:1.8fr 1.2fr 1.2fr 0.9fr 0.7fr 1fr 1.1fr 0.6fr; gap:12px; align-items:center; padding:14px 22px; border:none; border-top:1px solid #f4efe8; background:none; cursor:pointer; text-align:left;">
+                <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                  <div style="position:relative; width:42px; height:42px; border-radius:9px; overflow:hidden; background:repeating-linear-gradient(45deg,#efe7db,#efe7db 5px,#f6f0e6 5px,#f6f0e6 10px); flex-shrink:0;"><sc-if value="{{ r.hasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ r.photo }}" style="width:100%;height:100%;object-fit:cover;"></sc-if></div>
+                  <div style="min-width:0;"><p style="margin:0; font-size:14px; font-weight:700;">{{ r.category }}</p><sc-if value="{{ r.edited }}" hint-placeholder-val="{{ false }}"><p style="margin:2px 0 0; font-size:11.5px; color:#d24d84; font-weight:600;">edited</p></sc-if></div>
+                </div>
+                <span style="font-size:13.5px; font-weight:700; color:#a83168;">{{ r.maker }}</span>
+                <span style="font-size:13.5px; color:#6b625a;">{{ r.employee }}</span>
+                <span style="font-size:14.5px; font-weight:700; color:#d24d84;">{{ r.priceLabel }}</span>
+                <span style="font-size:13.5px; color:#6b625a;">{{ r.qty }}</span>
+                <span style="font-size:13.5px; color:#6b625a;">{{ r.payment }}</span>
+                <span style="font-size:13px; color:#9a9088;">{{ r.dateLabel }}</span>
+                <span style="text-align:right; color:#d24d84;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;"><path d="M9 6l6 6-6 6"/></svg></span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- SETTINGS -->
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:640px; display:flex; flex-direction:column; gap:18px;">
+            <div style="background:#fff; border-radius:18px; padding:24px; box-shadow:0 2px 10px rgba(60,45,30,.05);">
+              <h2 style="margin:0 0 4px; font-size:16px; font-weight:800;">Shop</h2>
+              <p style="margin:0 0 18px; font-size:13.5px; color:#9a9088;">Shown across the console and the staff capture app.</p>
+              <label style="display:block; font-size:13px; font-weight:700; color:#6b625a; margin:0 2px 7px;">Shop name</label>
+              <input value="{{ shopName }}" readonly style="width:100%; padding:13px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#faf7f2; font-size:15px; color:#6b625a;">
+            </div>
+            <div style="background:#fff; border-radius:18px; padding:24px; box-shadow:0 2px 10px rgba(60,45,30,.05);">
+              <h2 style="margin:0 0 4px; font-size:16px; font-weight:800;">Product categories</h2>
+              <p style="margin:0 0 16px; font-size:13.5px; color:#9a9088;">Options staff choose from when logging a product.</p>
+              <div style="display:flex; flex-wrap:wrap; gap:9px;">
+                <sc-for list="{{ categories }}" as="c" hint-placeholder-count="3">
+                  <span style="padding:9px 15px; border-radius:999px; background:#fbe4ef; font-size:13.5px; font-weight:600; color:#a83168;">{{ c }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#fff; border-radius:18px; padding:24px; box-shadow:0 2px 10px rgba(60,45,30,.05);">
+              <h2 style="margin:0 0 4px; font-size:16px; font-weight:800;">Access</h2>
+              <p style="margin:0; font-size:13.5px; color:#9a9088;">Administrators have full control: manage staff and passkeys, and view, edit or delete any purchase along with its full edit history.</p>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+  </sc-if>
+
+  <!-- ===================== EMPLOYEE MODAL ===================== -->
+  <sc-if value="{{ empModalOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:24px; animation:ac-fade .16s ease;">
+    <div onClick="{{ closeEmp }}" style="position:absolute; inset:0; background:rgba(30,22,16,.5);"></div>
+    <div style="position:relative; width:100%; max-width:520px; background:#f7f4ef; border-radius:22px; padding:30px; box-shadow:0 30px 70px rgba(30,22,16,.4); animation:ac-pop .2s ease; max-height:90vh; overflow-y:auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+        <h2 style="margin:0; font-size:20px; font-weight:800;">{{ empModalTitle }}</h2>
+        <button onClick="{{ closeEmp }}" aria-label="Close" style="width:36px; height:36px; border:none; background:#fff; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2b2622" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">First name</label><input value="{{ ef.first }}" onChange="{{ onEfFirst }}" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"></div>
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Last name</label><input value="{{ ef.last }}" onChange="{{ onEfLast }}" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"></div>
+        <div style="grid-column:1 / -1;"><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Email</label><input value="{{ ef.email }}" onChange="{{ onEfEmail }}" type="email" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"></div>
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Phone</label><input value="{{ ef.phone }}" onChange="{{ onEfPhone }}" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"></div>
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Passkey (4–6 digits)</label><input value="{{ ef.code }}" onChange="{{ onEfCode }}" inputmode="numeric" maxlength="6" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; font-family:ui-monospace,monospace; letter-spacing:.1em;"></div>
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Role</label>
+          <div style="position:relative;"><select value="{{ ef.role }}" onChange="{{ onEfRole }}" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"><option value="Employee">Employee</option><option value="Manager">Manager</option></select><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9088" stroke-width="2" style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Status</label>
+          <div style="position:relative;"><select value="{{ ef.status }}" onChange="{{ onEfStatus }}" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"><option value="Active">Active</option><option value="Inactive">Inactive</option></select><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9088" stroke-width="2" style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+      </div>
+      <div style="height:20px; margin-top:8px;"><sc-if value="{{ hasEfError }}" hint-placeholder-val="{{ false }}"><p style="margin:0; font-size:13px; color:#c0392b; font-weight:600;">{{ efError }}</p></sc-if></div>
+      <div style="display:flex; gap:12px; margin-top:14px;">
+        <button onClick="{{ closeEmp }}" style="flex:1; padding:14px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; color:#6b625a; font-size:15px; font-weight:700; cursor:pointer;">Cancel</button>
+        <button onClick="{{ saveEmp }}" style="flex:1; padding:14px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26);">{{ empSaveLabel }}</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== EMPLOYEE DELETE CONFIRM ===================== -->
+  <sc-if value="{{ empConfirmOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center; padding:24px; animation:ac-fade .16s ease;">
+    <div onClick="{{ cancelEmpDelete }}" style="position:absolute; inset:0; background:rgba(30,22,16,.5);"></div>
+    <div style="position:relative; width:100%; max-width:400px; background:#f7f4ef; border-radius:20px; padding:28px; box-shadow:0 30px 70px rgba(30,22,16,.4); animation:ac-pop .2s ease;">
+      <h2 style="margin:0 0 8px; font-size:19px; font-weight:800;">Remove {{ empConfirmName }}?</h2>
+      <p style="margin:0 0 22px; font-size:14px; color:#6b625a;">Their passkey stops working immediately. Purchases they logged are kept.</p>
+      <div style="display:flex; gap:12px;">
+        <button onClick="{{ cancelEmpDelete }}" style="flex:1; padding:13px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; color:#6b625a; font-size:14px; font-weight:700; cursor:pointer;">Cancel</button>
+        <button onClick="{{ confirmEmpDelete }}" style="flex:1; padding:13px; border-radius:12px; border:none; background:#c0392b; color:#fff; font-size:14px; font-weight:700; cursor:pointer;">Remove user</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== PURCHASE DETAIL SLIDE-OVER ===================== -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; z-index:60;">
+    <div onClick="{{ closeDetail }}" style="position:absolute; inset:0; background:rgba(30,22,16,.45); animation:ac-fade .16s ease;"></div>
+    <div style="position:absolute; top:0; right:0; bottom:0; width:100%; max-width:460px; background:#f7f4ef; box-shadow:-12px 0 50px rgba(30,22,16,.3); display:flex; flex-direction:column; animation:ac-slide .22s ease;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #e6ded2;">
+        <h2 style="margin:0; font-size:18px; font-weight:800;">Purchase detail</h2>
+        <button onClick="{{ closeDetail }}" aria-label="Close" style="width:36px; height:36px; border:none; background:#fff; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2b2622" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:22px 24px 30px;">
+        <div style="width:100%; aspect-ratio:4/3; border-radius:16px; overflow:hidden; background:repeating-linear-gradient(45deg,#efe7db,#efe7db 8px,#f6f0e6 8px,#f6f0e6 16px); display:flex; align-items:center; justify-content:center; margin-bottom:22px;">
+          <sc-if value="{{ pd.hasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ pd.photo }}" style="width:100%;height:100%;object-fit:cover;"></sc-if>
+          <sc-if value="{{ pd.noPhoto }}" hint-placeholder-val="{{ true }}"><span style="font-family:ui-monospace,monospace; font-size:12px; color:#b5a894;">no photo</span></sc-if>
+        </div>
+
+        <label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Category</label>
+        <div style="position:relative; margin-bottom:14px;"><select value="{{ pf.category }}" onChange="{{ onPfCat }}" style="width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"><option value="Glass Flower">Glass Flower</option><option value="Glass Petals">Glass Petals</option><option value="Glass Artifact">Glass Artifact</option></select><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9088" stroke-width="2" style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><path d="M6 9l6 6 6-6"/></svg></div>
+        <label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Made by</label>
+        <div style="position:relative; margin-bottom:14px;"><select value="{{ pf.maker }}" onChange="{{ onPfMaker }}" style="width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"><sc-for list="{{ makerOpts }}" as="m" hint-placeholder-count="4"><option value="{{ m.value }}">{{ m.label }}</option></sc-for></select><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9088" stroke-width="2" style="position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none;"><path d="M6 9l6 6 6-6"/></svg></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Price ({{ currency }})</label><input value="{{ pf.price }}" onChange="{{ onPfPrice }}" type="number" style="width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; font-weight:600;"></div>
+          <div><label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Quantity</label><input value="{{ pf.qty }}" onChange="{{ onPfQty }}" type="number" min="1" style="width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px;"></div>
+        </div>
+        <label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Payment</label>
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          <button onClick="{{ pfCash }}" style="{{ pfCashStyle }}">Cash</button>
+          <button onClick="{{ pfOnline }}" style="{{ pfOnlineStyle }}">Online</button>
+        </div>
+        <label style="display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px;">Note</label>
+        <textarea value="{{ pf.note }}" onChange="{{ onPfNote }}" rows="2" style="width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14px; resize:none; margin-bottom:8px;"></textarea>
+
+        <p style="margin:6px 2px 18px; font-size:12.5px; color:#9a9088;">Logged by <strong style="color:#4a423a;">{{ pd.employee }}</strong> · {{ pd.dateLabel }}, {{ pd.timeLabel }}</p>
+
+        <div style="display:flex; gap:12px;">
+          <button onClick="{{ savePurchase }}" style="flex:1; padding:14px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14.5px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26);">Save changes</button>
+          <sc-if value="{{ pdShowDelete }}" hint-placeholder-val="{{ true }}"><button onClick="{{ askPurchaseDelete }}" style="padding:14px 18px; border-radius:12px; border:1.5px solid #e7c9bf; background:#fff; color:#c0392b; font-size:14.5px; font-weight:700; cursor:pointer;">Delete</button></sc-if>
+        </div>
+        <sc-if value="{{ pdConfirmDelete }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px; background:#fbeeeb; border:1.5px solid #e7c9bf; border-radius:14px; padding:14px 16px;">
+            <p style="margin:0 0 12px; font-size:13.5px; color:#8f2d20; font-weight:600;">Delete this purchase permanently?</p>
+            <div style="display:flex; gap:10px;"><button onClick="{{ cancelPurchaseDelete }}" style="flex:1; padding:11px; border-radius:10px; border:1.5px solid #e4ddd3; background:#fff; color:#6b625a; font-size:13.5px; font-weight:700; cursor:pointer;">Cancel</button><button onClick="{{ confirmPurchaseDelete }}" style="flex:1; padding:11px; border-radius:10px; border:none; background:#c0392b; color:#fff; font-size:13.5px; font-weight:700; cursor:pointer;">Delete</button></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pd.hasHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:28px;">
+            <p style="margin:0 0 12px; font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#a89e92;">Edit history</p>
+            <div style="border-left:2px solid #e4ddd3; margin-left:5px; padding-left:18px; display:flex; flex-direction:column; gap:13px;">
+              <div style="position:relative;"><div style="position:absolute; left:-25px; top:2px; width:12px; height:12px; border-radius:50%; background:#d24d84; border:2px solid #f7f4ef;"></div><p style="margin:0; font-size:13px; font-weight:700;">Current version</p><p style="margin:2px 0 0; font-size:12px; color:#9a9088;">{{ pd.updatedLabel }}</p></div>
+              <sc-for list="{{ pd.history }}" as="h" hint-placeholder-count="2">
+                <div style="position:relative;"><div style="position:absolute; left:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:#cfc6ba; border:2px solid #f7f4ef;"></div>
+                  <div style="background:#fff; border-radius:11px; padding:11px 14px; box-shadow:0 1px 4px rgba(60,45,30,.05);">
+                    <div style="display:flex; justify-content:space-between; gap:8px;"><span style="font-size:12.5px; font-weight:700;">{{ h.label }}</span><span style="font-size:11.5px; color:#b3aa9f;">{{ h.dateLabel }}, {{ h.timeLabel }}</span></div>
+                    <p style="margin:4px 0 0; font-size:12.5px; color:#6b625a;">{{ h.summary }}</p>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== TOAST ===================== -->
+  <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#2b2622; color:#fff; padding:13px 24px; border-radius:999px; font-size:14px; font-weight:600; z-index:90; box-shadow:0 10px 30px rgba(30,22,16,.35); display:flex; align-items:center; gap:9px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8fd19e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>{{ toast }}
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 900 },
+  &quot;shopName&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Song Art & Craft&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;currency&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;£&quot;, &quot;$&quot;, &quot;€&quot;], &quot;default&quot;: &quot;£&quot;, &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const now = Date.now(), day = 86400000;
+    this.state = {
+      screen: 'login',
+      tab: 'overview',
+      adminId: '', adminPw: '', loginError: '', shake: 0,
+      filter: 'All',
+      makerFilter: 'All',
+      makers: ['Song Art & Craft', 'Amir', 'Mei Ling', 'Luca'],
+      newMaker: '',
+      revealed: {},
+      empModalOpen: false, empEditingId: null, ef: this.blankEf(), efError: '',
+      empConfirmId: null,
+      detailOpen: false, detailId: null, pf: this.blankPf(), pdConfirmDelete: false,
+      toast: '',
+      employees: [
+        { id: 'e1', first: 'Sovrat', last: 'Rana', email: 'sovrat@songartcraft.co.uk', phone: '+44 7700 900123', code: '123456', role: 'Manager', status: 'Active' },
+        { id: 'e2', first: 'Amelia', last: 'Hart', email: 'amelia@songartcraft.co.uk', phone: '+44 7700 900321', code: '4021', role: 'Employee', status: 'Active' },
+        { id: 'e3', first: 'Priya', last: 'Nair', email: 'priya@songartcraft.co.uk', phone: '+44 7700 900987', code: '778812', role: 'Employee', status: 'Inactive' },
+      ],
+      purchases: [
+        { id: 'r3', photo: null, category: 'Glass Flower', price: 120, qty: 1, payment: 'Online', note: 'Amber rose, tall stem', maker: 'Amir', employee: 'Sovrat Rana', ts: now - 2 * 3600000, history: [] },
+        { id: 'r2', photo: null, category: 'Glass Petals', price: 45, qty: 3, payment: 'Cash', note: '', maker: 'Song Art & Craft', employee: 'Priya Nair', ts: now - 5 * 3600000, history: [] },
+        { id: 'r1', photo: null, category: 'Glass Artifact', price: 260, qty: 1, payment: 'Online', note: 'Frosted paperweight set', maker: 'Mei Ling', employee: 'Amelia Hart', ts: now - day - 3600000, updatedTs: now - day - 1800000, history: [
+          { ts: now - day - 2400000, category: 'Glass Artifact', price: 240, qty: 1, payment: 'Cash', note: 'paperweight' },
+          { ts: now - day - 3000000, category: 'Glass Artifact', price: 200, qty: 1, payment: 'Cash', note: '' },
+        ] },
+      ],
+    };
+  }
+  blankEf() { return { first: '', last: '', email: '', phone: '', code: '', role: 'Employee', status: 'Active' }; }
+  blankPf() { return { category: '', price: '', qty: 1, payment: 'Cash', note: '', maker: 'Song Art & Craft' }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  money(n) { return (this.props.currency || '£') + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  fmtDate(ts) { return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  fmtTime(ts) { return new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+  isToday(ts) { return new Date(ts).toDateString() === new Date().toDateString(); }
+  notify(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: '' }), 2600); }
+
+  doLogin() {
+    const { adminId, adminPw } = this.state;
+    if (adminId.trim().toLowerCase() === 'admin@songartcraft.com' && adminPw === '$Aurabh2695') this.setState({ screen: 'app', loginError: '' });
+    else this.setState(s => ({ loginError: 'Incorrect ID or password.', shake: s.shake + 1, adminPw: '' }));
+  }
+  logout() { this.setState({ screen: 'login', adminId: '', adminPw: '', tab: 'overview' }); }
+  go(tab) { this.setState({ tab }); }
+
+  openAddEmp() { this.setState({ empModalOpen: true, empEditingId: null, ef: this.blankEf(), efError: '' }); }
+  openEditEmp(id) { const e = this.state.employees.find(x => x.id === id); if (e) this.setState({ empModalOpen: true, empEditingId: id, ef: { first: e.first, last: e.last, email: e.email, phone: e.phone, code: e.code, role: e.role, status: e.status }, efError: '' }); }
+  closeEmp() { this.setState({ empModalOpen: false, efError: '' }); }
+  setEf(k, v) { this.setState(s => ({ ef: { ...s.ef, [k]: v } })); }
+  saveEmp() {
+    const ef = this.state.ef;
+    if (!ef.first.trim() || !ef.last.trim()) return this.setState({ efError: 'First and last name are required.' });
+    if (!/^\d{4,6}$/.test(ef.code)) return this.setState({ efError: 'Passkey must be 4 to 6 digits.' });
+    const clash = this.state.employees.some(e => e.code === ef.code && e.id !== this.state.empEditingId);
+    if (clash) return this.setState({ efError: 'That passkey is already in use.' });
+    this.setState(s => {
+      let employees;
+      if (s.empEditingId) employees = s.employees.map(e => e.id === s.empEditingId ? { ...e, ...ef, first: ef.first.trim(), last: ef.last.trim() } : e);
+      else employees = [...s.employees, { id: 'e' + Date.now(), ...ef, first: ef.first.trim(), last: ef.last.trim() }];
+      return { employees, empModalOpen: false, efError: '' };
+    });
+    this.notify(this.state.empEditingId ? 'User updated' : 'User added');
+  }
+  askEmpDelete(id) { this.setState({ empConfirmId: id }); }
+  cancelEmpDelete() { this.setState({ empConfirmId: null }); }
+  confirmEmpDelete() { this.setState(s => ({ employees: s.employees.filter(e => e.id !== s.empConfirmId), empConfirmId: null })); this.notify('User removed'); }
+  toggleReveal(id) { this.setState(s => ({ revealed: { ...s.revealed, [id]: !s.revealed[id] } })); }
+
+  openDetail(id) { const r = this.state.purchases.find(x => x.id === id); if (r) this.setState({ detailOpen: true, detailId: id, pdConfirmDelete: false, pf: { category: r.category, price: String(r.price), qty: r.qty, payment: r.payment, note: r.note || '', maker: r.maker || 'Song Art & Craft' } }); }
+  addMaker() { const v = (this.state.newMaker || '').trim(); if (!v) return; if (this.state.makers.some(m => m.toLowerCase() === v.toLowerCase())) return this.notify('That maker already exists'); this.setState(s => ({ makers: [...s.makers, v], newMaker: '' })); this.notify('Maker added'); }
+  deleteMaker(name) { if (name === 'Song Art & Craft') return; this.setState(s => ({ makers: s.makers.filter(m => m !== name), makerFilter: s.makerFilter === name ? 'All' : s.makerFilter })); this.notify('Maker removed'); }
+  closeDetail() { this.setState({ detailOpen: false, pdConfirmDelete: false }); }
+  setPf(k, v) { this.setState(s => ({ pf: { ...s.pf, [k]: v } })); }
+  savePurchase() {
+    const pf = this.state.pf, id = this.state.detailId;
+    if (!pf.category || !(Number(pf.price) > 0)) return this.notify('Enter a valid price');
+    this.setState(s => ({
+      purchases: s.purchases.map(r => {
+        if (r.id !== id) return r;
+        const snap = { ts: Date.now(), category: r.category, price: r.price, qty: r.qty, payment: r.payment, note: r.note, maker: r.maker };
+        return { ...r, category: pf.category, price: Number(pf.price), qty: Math.max(1, parseInt(pf.qty) || 1), payment: pf.payment, note: (pf.note || '').trim(), maker: pf.maker, updatedTs: Date.now(), history: [snap, ...(r.history || [])] };
+      }),
+      detailOpen: false,
+    }));
+    this.notify('Purchase updated');
+  }
+  askPurchaseDelete() { this.setState({ pdConfirmDelete: true }); }
+  cancelPurchaseDelete() { this.setState({ pdConfirmDelete: false }); }
+  confirmPurchaseDelete() { this.setState(s => ({ purchases: s.purchases.filter(r => r.id !== s.detailId), detailOpen: false, pdConfirmDelete: false })); this.notify('Purchase deleted'); }
+
+  eye(open) {
+    return open
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.1A9.5 9.5 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-3.6 4"/><path d="M6.6 6.6A15 15 0 0 0 2 12s3.5 7 10 7a9.5 9.5 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  }
+  navIcon(k) {
+    const ic = {
+      overview: '<path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-5H4z"/>',
+      employees: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-5 6-5s6 1.6 6 5"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 15.5c2.6.2 4.5 1.7 4.5 4.5"/>',
+      makers: '<path d="M12 3c1.6 2.2 1.6 4.4 0 6.6C10.4 7.4 10.4 5.2 12 3z"/><path d="M12 9.6a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4z"/><path d="M12 18v3"/>',
+      purchases: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+      settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+    };
+    return '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ic[k] + '</svg>';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const inits = (f, l) => ((f[0] || '') + (l[0] || '')).toUpperCase();
+    const toDisp = r => ({
+      id: r.id, hasPhoto: !!r.photo, noPhoto: !r.photo, photo: r.photo || '',
+      category: r.category, priceLabel: this.money(r.price), qty: r.qty, payment: r.payment,
+      employee: r.employee, maker: r.maker || 'Song Art & Craft', dateLabel: this.fmtDate(r.ts), timeLabel: this.fmtTime(r.ts),
+      edited: !!r.updatedTs, updatedLabel: r.updatedTs ? this.fmtDate(r.updatedTs) + ', ' + this.fmtTime(r.updatedTs) : this.fmtDate(r.ts) + ', ' + this.fmtTime(r.ts),
+      hasHistory: !!(r.history && r.history.length),
+      history: (r.history || []).map((h, i) => ({ label: 'Version ' + (r.history.length - i), dateLabel: this.fmtDate(h.ts), timeLabel: this.fmtTime(h.ts), summary: h.category + ' · ' + this.money(h.price) + ' · Qty ' + h.qty + ' · ' + h.payment + (h.maker ? ' · ' + h.maker : '') })),
+      onView: () => this.openDetail(r.id),
+    });
+
+    const nav = [['overview', 'Overview'], ['employees', 'Employees'], ['makers', 'Made by'], ['purchases', 'Purchases'], ['settings', 'Settings']];
+    const navItems = nav.map(([k, label]) => {
+      const active = s.tab === k;
+      return {
+        label, icon: { __html: this.navIcon(k) }, onClick: () => this.go(k),
+        hasBadge: k === 'employees' || k === 'purchases' || k === 'makers',
+        badge: k === 'employees' ? String(s.employees.length) : k === 'purchases' ? String(s.purchases.length) : k === 'makers' ? String(s.makers.length) : '',
+        style: 'display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:4px; border:none; border-radius:11px; cursor:pointer; text-align:left; color:' + (active ? '#fff' : '#c3bab0') + '; background:' + (active ? 'rgba(210,77,132,.9)' : 'transparent') + ';',
+      };
+    });
+
+    const totalRev = s.purchases.reduce((a, r) => a + r.price * r.qty, 0);
+    const today = s.purchases.filter(r => this.isToday(r.ts));
+    const activeEmp = s.employees.filter(e => e.status === 'Active').length;
+    const stats = [
+      { label: 'Total revenue', value: this.money(totalRev), sub: 'all recorded', color: '#d24d84' },
+      { label: "Today", value: this.money(today.reduce((a, r) => a + r.price * r.qty, 0)), sub: today.length + ' captures', color: '#2b2622' },
+      { label: 'Purchases', value: String(s.purchases.length), sub: 'total logged', color: '#2b2622' },
+      { label: 'Staff', value: String(activeEmp), sub: 'active of ' + s.employees.length, color: '#2b2622' },
+    ];
+
+    const empRows = s.employees.map(e => ({
+      id: e.id, name: e.first + ' ' + e.last, initials: inits(e.first, e.last), email: e.email, phone: e.phone,
+      codeLabel: s.revealed[e.id] ? e.code : '••••••', eyeIcon: { __html: this.eye(s.revealed[e.id]) }, role: e.role, status: e.status,
+      statusStyle: 'justify-self:start; font-size:12.5px; font-weight:700; padding:4px 11px; border-radius:999px; ' + (e.status === 'Active' ? 'background:#e4f1e6; color:#3f7d4f;' : 'background:#efe7db; color:#9a8b78;'),
+      onReveal: () => this.toggleReveal(e.id), onEdit: () => this.openEditEmp(e.id), onDelete: () => this.askEmpDelete(e.id),
+    }));
+
+    const cats = ['All', 'Glass Flower', 'Glass Petals', 'Glass Artifact'];
+    const chips = cats.map(c => ({ label: c, onClick: () => this.setState({ filter: c }), style: 'padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid ' + (s.filter === c ? '#d24d84; background:#d24d84; color:#fff;' : '#e4ddd3; background:#fff; color:#6b625a;') }));
+    const makerFilterChips = ['All', ...s.makers].map(m => ({ label: m, onClick: () => this.setState({ makerFilter: m }), style: 'padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid ' + (s.makerFilter === m ? '#d24d84; background:#d24d84; color:#fff;' : '#e4ddd3; background:#fff; color:#6b625a;') }));
+    const purchRows = s.purchases
+      .filter(r => s.filter === 'All' || r.category === s.filter)
+      .filter(r => s.makerFilter === 'All' || (r.maker || 'Song Art & Craft') === s.makerFilter)
+      .map(toDisp);
+    const makerRows = s.makers.map(m => ({
+      name: m, isDefault: m === 'Song Art & Craft', notDefault: m !== 'Song Art & Craft',
+      count: s.purchases.filter(r => (r.maker || 'Song Art & Craft') === m).length + ' products',
+      onDelete: () => this.deleteMaker(m),
+    }));
+    const makerOpts = s.makers.map(m => ({ value: m, label: m }));
+
+    const detRec = s.purchases.find(r => r.id === s.detailId);
+    const pd = detRec ? toDisp(detRec) : { hasPhoto: false, noPhoto: true, hasHistory: false, history: [] };
+    const pf = s.pf;
+    const payBtn = a => 'flex:1; padding:12px; border-radius:11px; font-size:14px; font-weight:700; cursor:pointer; border:1.5px solid ' + (a ? '#d24d84; background:#fbe4ef; color:#a83168;' : '#e4ddd3; background:#fff; color:#9a9088;');
+    const empConfirm = s.employees.find(e => e.id === s.empConfirmId);
+
+    const titles = { overview: ['Overview', "Today's performance and latest activity."], employees: ['Employees', 'Add staff, manage their passkeys and access.'], makers: ['Made by', 'Manage the makers products can be attributed to.'], purchases: ['Purchases', 'Every logged product — view, edit or remove.'], settings: ['Settings', 'Shop configuration and access rules.'] };
+
+    return {
+      isLogin: s.screen === 'login', isApp: s.screen === 'app',
+      shopName: this.props.shopName || 'Song Art & Craft', currency: this.props.currency || '£',
+      adminId: s.adminId, adminPw: s.adminPw, loginError: s.loginError, hasLoginError: !!s.loginError,
+      shakeClass: s.loginError ? 'ac-shk-' + s.shake : '',
+      onAdminId: e => this.setState({ adminId: e.target.value }), onAdminPw: e => this.setState({ adminPw: e.target.value }),
+      doLogin: () => this.doLogin(), logout: () => this.logout(),
+      navItems, pageTitle: titles[s.tab][0], pageSub: titles[s.tab][1],
+      showAddUser: s.tab === 'employees',
+      isOverview: s.tab === 'overview', isEmployees: s.tab === 'employees', isMakers: s.tab === 'makers', isPurchases: s.tab === 'purchases', isSettings: s.tab === 'settings',
+      stats, recent: s.purchases.slice(0, 5).map(toDisp), goPurchases: () => this.go('purchases'),
+      empRows, chips, makerFilterChips, purchRows, makerRows, makerOpts,
+      newMaker: s.newMaker, onNewMaker: e => this.setState({ newMaker: e.target.value }), addMaker: () => this.addMaker(),
+      categories: ['Glass Flower', 'Glass Petals', 'Glass Artifact'],
+      openAddEmp: () => this.openAddEmp(),
+      empModalOpen: s.empModalOpen, empModalTitle: s.empEditingId ? 'Edit user' : 'Add user', empSaveLabel: s.empEditingId ? 'Save changes' : 'Add user',
+      ef: s.ef, efError: s.efError, hasEfError: !!s.efError,
+      onEfFirst: e => this.setEf('first', e.target.value), onEfLast: e => this.setEf('last', e.target.value),
+      onEfEmail: e => this.setEf('email', e.target.value), onEfPhone: e => this.setEf('phone', e.target.value),
+      onEfCode: e => this.setEf('code', e.target.value.replace(/\D/g, '').slice(0, 6)), onEfRole: e => this.setEf('role', e.target.value), onEfStatus: e => this.setEf('status', e.target.value),
+      closeEmp: () => this.closeEmp(), saveEmp: () => this.saveEmp(),
+      empConfirmOpen: !!s.empConfirmId, empConfirmName: empConfirm ? empConfirm.first + ' ' + empConfirm.last : '',
+      cancelEmpDelete: () => this.cancelEmpDelete(), confirmEmpDelete: () => this.confirmEmpDelete(),
+      detailOpen: s.detailOpen, pd, pf,
+      onPfCat: e => this.setPf('category', e.target.value), onPfPrice: e => this.setPf('price', e.target.value), onPfQty: e => this.setPf('qty', e.target.value), onPfNote: e => this.setPf('note', e.target.value), onPfMaker: e => this.setPf('maker', e.target.value),
+      pfCash: () => this.setPf('payment', 'Cash'), pfOnline: () => this.setPf('payment', 'Online'),
+      pfCashStyle: payBtn(pf.payment === 'Cash'), pfOnlineStyle: payBtn(pf.payment === 'Online'),
+      closeDetail: () => this.closeDetail(), savePurchase: () => this.savePurchase(),
+      pdShowDelete: !s.pdConfirmDelete, pdConfirmDelete: s.pdConfirmDelete,
+      askPurchaseDelete: () => this.askPurchaseDelete(), cancelPurchaseDelete: () => this.cancelPurchaseDelete(), confirmPurchaseDelete: () => this.confirmPurchaseDelete(),
+      toast: s.toast, toastVisible: !!s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

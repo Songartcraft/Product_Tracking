@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song Art &amp; Craft — Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { font-family:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,sans-serif; background:#e7ded2; color:#2b2622; }
+  button, input, select, textarea { font-family:inherit; }
+  select { -webkit-appearance:none; appearance:none; }
+  ::-webkit-scrollbar { width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb { background:#d8cfc2; border-radius:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  @keyframes ac-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+  @keyframes ac-fade { from{opacity:0} to{opacity:1} }
+  @keyframes ac-slide { from{transform:translateX(30px); opacity:0} to{transform:translateX(0); opacity:1} }
+  @keyframes ac-pop { from{transform:translateY(12px) scale(.98); opacity:0} to{transform:translateY(0) scale(1); opacity:1} }
+  .shake { animation:ac-shake .4s ease; }
+  #root { height:100%; min-height:100%; display:flex; }
+
+  .logo-mark { display:flex; align-items:center; justify-content:center; background:#d24d84; flex-shrink:0; }
+
+  .login-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:40px; }
+  .login-card { width:100%; max-width:420px; background:#f7f4ef; border-radius:24px; padding:44px 40px; box-shadow:0 24px 60px rgba(60,45,30,.2); }
+  .lockup { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+  .lockup .w1 { margin:0; font-family:'Instrument Serif',serif; font-size:22px; line-height:1.12; }
+  .lockup .w2 { margin:6px 0 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#a89e92; font-weight:700; }
+  .login-card h1 { margin:0 0 6px; font-size:24px; font-weight:800; }
+  .login-card .sub { margin:0 0 26px; font-size:14px; color:#9a9088; }
+  .f-label { display:block; font-size:13px; font-weight:700; color:#6b625a; margin:0 2px 7px; }
+  .f-in { width:100%; padding:14px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:15px; }
+  .login-err { height:20px; margin:8px 0 6px; }
+  .login-err p { margin:0; font-size:13px; color:#c0392b; font-weight:600; }
+  .primary { width:100%; padding:15px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(210,77,132,.3); }
+  .login-foot { margin:20px 0 0; font-size:12px; color:#c0b8ac; text-align:center; }
+
+  .shell { flex:1; display:flex; height:100%; min-width:0; }
+  aside { width:250px; flex-shrink:0; background:#2b2622; color:#e9e2d8; display:flex; flex-direction:column; padding:24px 16px; }
+  .side-lockup { display:flex; align-items:center; gap:11px; padding:4px 8px 26px; }
+  .side-lockup .w1 { margin:0; font-family:'Instrument Serif',serif; font-size:19px; line-height:1.12; color:#fff; }
+  .side-lockup .w2 { margin:5px 0 0; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#8a8073; font-weight:700; }
+  .nav-item { display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-bottom:4px; border:none; border-radius:11px; cursor:pointer; text-align:left; color:#c3bab0; background:transparent; }
+  .nav-item.on { color:#fff; background:rgba(210,77,132,.9); }
+  .nav-item .lbl { font-size:14.5px; font-weight:600; }
+  .nav-item .bdg { margin-left:auto; font-size:12px; font-weight:700; background:rgba(255,255,255,.14); padding:2px 8px; border-radius:999px; }
+  .admin-card { background:rgba(255,255,255,.06); border-radius:14px; padding:14px; }
+  .admin-card .row { display:flex; align-items:center; gap:10px; }
+  .admin-card .av { width:36px; height:36px; border-radius:50%; background:#d24d84; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+  .admin-card .n1 { margin:0; font-size:13.5px; font-weight:700; color:#fff; }
+  .admin-card .n2 { margin:1px 0 0; font-size:11.5px; color:#9a9082; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .signout { width:100%; margin-top:12px; padding:9px; border-radius:9px; border:1px solid rgba(255,255,255,.14); background:none; color:#e9e2d8; font-size:13px; font-weight:600; cursor:pointer; }
+
+  main { flex:1; min-width:0; display:flex; flex-direction:column; background:#f4f0ea; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:22px 34px; border-bottom:1px solid #e6ded2; background:#f7f4ef; }
+  header h1 { margin:0; font-size:23px; font-weight:800; }
+  header .sub { margin:4px 0 0; font-size:13.5px; color:#9a9088; }
+  .add-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26); }
+  .content { flex:1; overflow-y:auto; padding:30px 34px 60px; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:30px; }
+  .stat-card { background:#fff; border-radius:18px; padding:22px; box-shadow:0 2px 10px rgba(60,45,30,.05); }
+  .stat-card .lab { margin:0; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#a89e92; font-weight:700; }
+  .stat-card .val { margin:10px 0 0; font-family:'Instrument Serif',serif; font-size:38px; line-height:1; }
+  .stat-card .sub { margin:6px 0 0; font-size:13px; color:#9a9088; }
+  .panel { background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(60,45,30,.05); overflow:hidden; }
+  .panel-head { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid #f0ebe3; }
+  .panel-head h2 { margin:0; font-size:16px; font-weight:800; }
+  .link-btn { border:none; background:none; color:#d24d84; font-weight:700; font-size:13.5px; cursor:pointer; }
+  .thead { display:grid; gap:12px; padding:14px 22px; background:#faf7f2; border-bottom:1px solid #f0ebe3; font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:#a89e92; font-weight:700; }
+  .th-sort { cursor:pointer; user-select:none; display:inline-flex; align-items:center; gap:4px; }
+  .th-sort:hover { color:#6b625a; }
+  .th-sort.on { color:#a83168; }
+  .trow { display:grid; gap:12px; align-items:center; padding:14px 22px; border-top:1px solid #f4efe8; background:none; border-left:none; border-right:none; border-bottom:none; width:100%; text-align:left; }
+  button.trow { cursor:pointer; }
+  .g-recent { grid-template-columns:2fr 1.4fr 1fr 1fr 1.1fr; }
+  .g-emp { grid-template-columns:2fr 2.2fr 1.2fr 1fr 1fr 1fr; }
+  .g-makers { grid-template-columns:2.4fr 1fr 0.8fr; }
+  .g-purch { grid-template-columns:1.8fr 1.2fr 1.2fr 0.9fr 0.7fr 1fr 1.1fr 0.6fr; }
+  .thumb { position:relative; width:42px; height:42px; border-radius:9px; overflow:hidden; background:repeating-linear-gradient(45deg,#efe7db,#efe7db 5px,#f6f0e6 5px,#f6f0e6 10px); flex-shrink:0; }
+  .thumb img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .cell-prod { display:flex; align-items:center; gap:12px; min-width:0; }
+  .cell-prod .cat { margin:0; font-size:14px; font-weight:700; }
+  .cell-prod .edited { margin:2px 0 0; font-size:11.5px; color:#d24d84; font-weight:600; }
+  .c-dim { font-size:13.5px; color:#6b625a; }
+  .c-price { font-size:14.5px; font-weight:700; color:#d24d84; }
+  .c-maker { font-size:13.5px; font-weight:700; color:#a83168; }
+  .c-date { font-size:13px; color:#9a9088; }
+
+  .emp-av { width:38px; height:38px; border-radius:50%; background:#fbe4ef; color:#a83168; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0; }
+  .emp-name { margin:0; font-size:14.5px; font-weight:700; }
+  .emp-mail { margin:0; font-size:13px; color:#4a423a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .emp-phone { margin:2px 0 0; font-size:12.5px; color:#9a9088; }
+  .code { font-family:ui-monospace,'SF Mono',monospace; font-size:14px; font-weight:700; letter-spacing:.06em; color:#2b2622; }
+  .eye { border:none; background:none; cursor:pointer; padding:2px; color:#b3aa9f; display:inline-flex; }
+  .eye.on { color:#a83168; }
+  .pill { justify-self:start; font-size:12.5px; font-weight:700; padding:4px 11px; border-radius:999px; }
+  .pill.active { background:#e4f1e6; color:#3f7d4f; }
+  .pill.inactive { background:#efe7db; color:#9a8b78; }
+  .act-btn { width:34px; height:34px; border-radius:9px; border:1px solid #e9e3da; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6b625a; }
+  .act-btn.danger { border-color:#e7c9bf; color:#c0392b; }
+
+  .maker-card { background:#fff; border-radius:18px; padding:22px; box-shadow:0 2px 10px rgba(60,45,30,.05); margin-bottom:18px; }
+  .maker-card h2 { margin:0 0 4px; font-size:16px; font-weight:800; }
+  .maker-card .sub { margin:0 0 16px; font-size:13.5px; color:#9a9088; }
+  .maker-row { display:flex; gap:10px; }
+  .maker-row input { flex:1; padding:13px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; }
+  .maker-add { display:inline-flex; align-items:center; gap:8px; padding:13px 20px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26); }
+  .m-av { width:36px; height:36px; border-radius:50%; background:#fbe4ef; color:#a83168; display:flex; align-items:center; justify-content:center; }
+  .m-name { font-size:14.5px; font-weight:700; }
+  .def-pill { font-size:11.5px; font-weight:700; color:#a83168; background:#fbe4ef; padding:3px 10px; border-radius:999px; }
+  .inline-edit { display:flex; gap:8px; align-items:center; flex:1; }
+  .inline-edit input { flex:1; padding:9px 12px; border-radius:10px; border:1.5px solid #d24d84; background:#fff; font-size:14px; font-weight:600; }
+  .mini-btn { padding:9px 14px; border-radius:10px; border:none; background:#d24d84; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+  .mini-cancel { padding:9px 12px; border-radius:10px; border:1px solid #e4ddd3; background:#fff; color:#6b625a; font-size:13px; font-weight:600; cursor:pointer; }
+
+  .chips { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .chips2 { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .chips2 .mlab { font-size:12px; font-weight:700; color:#b3aa9f; min-width:62px; }
+  .chip { padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid #e4ddd3; background:#fff; color:#6b625a; }
+  .chip.on { border-color:#d24d84; background:#d24d84; color:#fff; }
+
+  .set-col { max-width:720px; display:flex; flex-direction:column; gap:18px; }
+  .set-card { background:#fff; border-radius:18px; padding:24px; box-shadow:0 2px 10px rgba(60,45,30,.05); }
+  .set-card h2 { margin:0 0 4px; font-size:16px; font-weight:800; }
+  .set-card .sub { margin:0 0 18px; font-size:13.5px; color:#9a9088; }
+  .set-card .sub2 { margin:0; font-size:13.5px; color:#9a9088; }
+  .set-row { display:flex; gap:10px; }
+  .set-row input { flex:1; padding:13px 15px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; }
+  .cat-row { display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid #f4efe8; }
+  .cat-row:last-of-type { border-bottom:none; }
+  .cat-row .nm { flex:1; font-size:14.5px; font-weight:600; }
+  .cat-row .cnt { font-size:12.5px; color:#9a9088; }
+  .adm-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f4efe8; }
+  .adm-row:last-of-type { border-bottom:none; }
+  .adm-row .em { flex:1; font-size:14.5px; font-weight:600; }
+  .you-pill { font-size:11.5px; font-weight:700; color:#3f7d4f; background:#e4f1e6; padding:3px 10px; border-radius:999px; }
+  .form2 { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; }
+  .form2 input { padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14px; }
+  .set-note { margin:12px 0 0; font-size:12.5px; color:#b3aa9f; }
+
+  .modal-wrap { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:24px; animation:ac-fade .16s ease; }
+  .scrim { position:absolute; inset:0; background:rgba(30,22,16,.5); }
+  .modal { position:relative; width:100%; max-width:520px; background:#f7f4ef; border-radius:22px; padding:30px; box-shadow:0 30px 70px rgba(30,22,16,.4); animation:ac-pop .2s ease; max-height:90vh; overflow-y:auto; }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .modal-head h2 { margin:0; font-size:20px; font-weight:800; }
+  .mx { width:36px; height:36px; border:none; background:#fff; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .m-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .m-grid .full { grid-column:1 / -1; }
+  .m-label { display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px; }
+  .m-in { width:100%; padding:12px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; }
+  .m-in.mono { font-family:ui-monospace,monospace; letter-spacing:.1em; }
+  .sel-wrap { position:relative; }
+  .sel-wrap svg.car { position:absolute; right:13px; top:50%; transform:translateY(-50%); pointer-events:none; }
+  .m-err { height:20px; margin-top:8px; }
+  .m-err p { margin:0; font-size:13px; color:#c0392b; font-weight:600; }
+  .m-btns { display:flex; gap:12px; margin-top:14px; }
+  .m-cancel { flex:1; padding:14px; border-radius:12px; border:1.5px solid #e4ddd3; background:#fff; color:#6b625a; font-size:15px; font-weight:700; cursor:pointer; }
+  .m-save { flex:1; padding:14px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26); }
+
+  .confirm { position:relative; width:100%; max-width:400px; background:#f7f4ef; border-radius:20px; padding:28px; box-shadow:0 30px 70px rgba(30,22,16,.4); animation:ac-pop .2s ease; }
+  .confirm h2 { margin:0 0 8px; font-size:19px; font-weight:800; }
+  .confirm p { margin:0 0 22px; font-size:14px; color:#6b625a; }
+  .c-remove { flex:1; padding:13px; border-radius:12px; border:none; background:#c0392b; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
+
+  .so-wrap { position:fixed; inset:0; z-index:60; }
+  .so { position:absolute; top:0; right:0; bottom:0; width:100%; max-width:460px; background:#f7f4ef; box-shadow:-12px 0 50px rgba(30,22,16,.3); display:flex; flex-direction:column; animation:ac-slide .22s ease; }
+  .so-head { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #e6ded2; }
+  .so-head h2 { margin:0; font-size:18px; font-weight:800; }
+  .so-body { flex:1; overflow-y:auto; padding:22px 24px 30px; }
+  .so-photo { width:100%; aspect-ratio:4/3; border-radius:16px; overflow:hidden; background:repeating-linear-gradient(45deg,#efe7db,#efe7db 8px,#f6f0e6 8px,#f6f0e6 16px); display:flex; align-items:center; justify-content:center; margin-bottom:22px; }
+  .so-photo img { width:100%; height:100%; object-fit:cover; }
+  .so-photo .np { font-family:ui-monospace,monospace; font-size:12px; color:#b5a894; }
+  .so-label { display:block; font-size:12.5px; font-weight:700; color:#6b625a; margin:0 2px 6px; }
+  .so-sel { width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; }
+  .so-in { width:100%; padding:13px 14px; border-radius:11px; border:1.5px solid #e4ddd3; background:#fff; font-size:14.5px; }
+  .so-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .pay-btn { flex:1; padding:12px; border-radius:11px; font-size:14px; font-weight:700; cursor:pointer; border:1.5px solid #e4ddd3; background:#fff; color:#9a9088; }
+  .pay-btn.on { border-color:#d24d84; background:#fbe4ef; color:#a83168; }
+  .so-meta { margin:6px 2px 18px; font-size:12.5px; color:#9a9088; }
+  .so-meta strong { color:#4a423a; }
+  .so-btns { display:flex; gap:12px; }
+  .so-save { flex:1; padding:14px; border-radius:12px; border:none; background:#d24d84; color:#fff; font-size:14.5px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(210,77,132,.26); }
+  .so-del { padding:14px 18px; border-radius:12px; border:1.5px solid #e7c9bf; background:#fff; color:#c0392b; font-size:14.5px; font-weight:700; cursor:pointer; }
+  .so-confirm { margin-top:12px; background:#fbeeeb; border:1.5px solid #e7c9bf; border-radius:14px; padding:14px 16px; }
+  .so-confirm p { margin:0 0 12px; font-size:13.5px; color:#8f2d20; font-weight:600; }
+  .so-confirm .btns { display:flex; gap:10px; }
+  .so-confirm .c { flex:1; padding:11px; border-radius:10px; border:1.5px solid #e4ddd3; background:#fff; color:#6b625a; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .so-confirm .d { flex:1; padding:11px; border-radius:10px; border:none; background:#c0392b; color:#fff; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .hist { margin-top:28px; }
+  .hist .ht { margin:0 0 12px; font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#a89e92; }
+  .hist .line { border-left:2px solid #e4ddd3; margin-left:5px; padding-left:18px; display:flex; flex-direction:column; gap:13px; }
+  .hist .cur-dot { position:absolute; left:-25px; top:2px; width:12px; height:12px; border-radius:50%; background:#d24d84; border:2px solid #f7f4ef; }
+  .hist .old-dot { position:absolute; left:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:#cfc6ba; border:2px solid #f7f4ef; }
+  .hist .cv1 { margin:0; font-size:13px; font-weight:700; }
+  .hist .cv2 { margin:2px 0 0; font-size:12px; color:#9a9088; }
+  .hist .vcard { background:#fff; border-radius:11px; padding:11px 14px; box-shadow:0 1px 4px rgba(60,45,30,.05); }
+  .hist .vrow { display:flex; justify-content:space-between; gap:8px; }
+  .hist .vlab { font-size:12.5px; font-weight:700; }
+  .hist .vdate { font-size:11.5px; color:#b3aa9f; }
+  .hist .vsum { margin:4px 0 0; font-size:12.5px; color:#6b625a; }
+
+  .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#2b2622; color:#fff; padding:13px 24px; border-radius:999px; font-size:14px; font-weight:600; z-index:90; box-shadow:0 10px 30px rgba(30,22,16,.35); display:flex; align-items:center; gap:9px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<input type="file" id="logoIn" accept="image/*" style="display:none">
+<script>
+const CUR = '£';
+
+const S = {
+  booted: false, admin: null,
+  tab: 'overview',
+  adminId: '', loginError: '', shake: false,
+  employees: [], makers: [], purchases: [], categories: [], admins: [], deleteRequests: [],
+  shopName: 'Song Art & Craft', logoUrl: '',
+  filter: 'All', makerFilter: 'All', empFilter: 'All',
+  sort: { key: 'date', dir: 'desc' },
+  newMaker: '', makerEditId: null,
+  catEditId: null,
+  empModalOpen: false, empEditingId: null, ef: null, efError: '',
+  empConfirmId: null,
+  revealed: {},
+  detailOpen: false, detailId: null, pf: null, pdConfirmDelete: false,
+  toast: '',
+};
+let toastTimer = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsq = s => esc(s).replace(/'/g, "\\'");
+const money = n => CUR + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtDate = ts => new Date(ts).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+const fmtTime = ts => new Date(ts).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+const isToday = ts => new Date(ts).toDateString() === new Date().toDateString();
+const inits = (f, l) => ((f[0] || '') + (l[0] || '')).toUpperCase();
+const catNames = () => S.categories.map(c => c.name);
+
+async function api(path, opts = {}) {
+  const r = await fetch('/api/' + path, { credentials:'same-origin', headers:{ 'content-type':'application/json' }, ...opts });
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((j && j.error) || 'Request failed');
+  return j;
+}
+function mapPurchase(p) {
+  return {
+    id: p.id, photo: p.photo_url || null, category: p.category,
+    price: Number(p.price), qty: p.quantity, payment: p.payment, note: p.note || '',
+    makerId: p.maker_id, maker: (p.makers && p.makers.name) || S.shopName,
+    employee: p.employees ? (p.employees.first_name + ' ' + p.employees.last_name) : '—',
+    ts: new Date(p.created_at).getTime(),
+    updatedTs: p.updated_at ? new Date(p.updated_at).getTime() : null,
+    history: (p.purchase_history || []).map(h => ({
+      ts: new Date(h.created_at).getTime(), category: h.category, price: Number(h.price),
+      qty: h.quantity, payment: h.payment, note: h.note || '', maker: h.maker_name,
+    })),
+  };
+}
+async function boot() {
+  try {
+    const d = await api('bootstrap');
+    S.categories = d.categories || [];
+    S.shopName = d.shop_name || S.shopName;
+    if (d.logo_url !== undefined) S.logoUrl = d.logo_url || '';
+    if (d.session && d.session.t === 'admin') {
+      S.admin = { id: d.session.id, email: d.session.email };
+      applyData(d);
+    }
+  } catch (e) {}
+  S.booted = true; render();
+}
+function applyData(d) {
+  S.makers = d.makers || [];
+  S.purchases = (d.purchases || []).map(mapPurchase);
+  S.employees = d.employees || [];
+  S.categories = d.categories || S.categories;
+  S.shopName = d.shop_name || S.shopName;
+  if (d.logo_url !== undefined) S.logoUrl = d.logo_url || '';
+  S.admins = d.admins || S.admins;
+  S.deleteRequests = d.delete_requests || [];
+}
+async function refresh() { applyData(await api('bootstrap')); }
+function notify(msg) { clearTimeout(toastTimer); S.toast = msg; render(); toastTimer = setTimeout(() => { S.toast = ''; render(); }, 2600); }
+
+async function doLogin() {
+  const email = $('#adminId').value, pw = $('#adminPw').value;
+  S.adminId = email;
+  try {
+    const d = await api('admin/login', { method:'POST', body: JSON.stringify({ email, password: pw }) });
+    S.admin = d.admin; S.loginError = ''; S.tab = 'overview';
+    await refresh(); render();
+  } catch (e) {
+    S.loginError = 'Incorrect ID or password.';
+    S.shake = true; render(); setTimeout(() => { S.shake = false; render(); }, 450);
+  }
+}
+async function logout() {
+  try { await api('logout', { method:'POST' }); } catch (e) {}
+  Object.assign(S, { admin:null, adminId:'', tab:'overview', employees:[], purchases:[], admins:[], revealed:{}, detailOpen:false, empModalOpen:false });
+  render();
+}
+function go(tab) { S.tab = tab; render(); }
+
+/* ---- Employees ---- */
+function blankEf() { return { first:'', last:'', email:'', phone:'', code:'', role:'Employee', status:'Active' }; }
+function openAddEmp() { S.empModalOpen = true; S.empEditingId = null; S.ef = blankEf(); S.efError = ''; render(); }
+function openEditEmp(id) {
+  const e = S.employees.find(x => x.id === id); if (!e) return;
+  S.empModalOpen = true; S.empEditingId = id; S.efError = '';
+  S.ef = { first: e.first_name, last: e.last_name, email: e.email || '', phone: e.phone || '', code: '', role: e.role, status: e.status };
+  render();
+}
+function closeEmp() { S.empModalOpen = false; S.efError = ''; render(); }
+function readEf() {
+  S.ef = {
+    first: $('#efFirst').value, last: $('#efLast').value, email: $('#efEmail').value,
+    phone: $('#efPhone').value, code: $('#efCode').value.replace(/\D/g, '').slice(0, 6),
+    role: $('#efRole').value, status: $('#efStatus').value,
+  };
+}
+async function saveEmp() {
+  readEf();
+  const ef = S.ef;
+  if (!ef.first.trim() || !ef.last.trim()) { S.efError = 'First and last name are required.'; return render(); }
+  if (!S.empEditingId && !/^\d{4,6}$/.test(ef.code)) { S.efError = 'Passkey must be 4 to 6 digits.'; return render(); }
+  if (S.empEditingId && ef.code && !/^\d{4,6}$/.test(ef.code)) { S.efError = 'Passkey must be 4 to 6 digits.'; return render(); }
+  try {
+    if (S.empEditingId) {
+      await api('admin/employees/' + S.empEditingId, { method:'PATCH', body: JSON.stringify({
+        first_name: ef.first, last_name: ef.last, email: ef.email, phone: ef.phone,
+        role: ef.role, status: ef.status, ...(ef.code ? { passkey: ef.code } : {}),
+      }) });
+      delete S.revealed[S.empEditingId];
+    } else {
+      await api('admin/employees', { method:'POST', body: JSON.stringify({
+        first_name: ef.first, last_name: ef.last, email: ef.email, phone: ef.phone,
+        passkey: ef.code, role: ef.role, status: ef.status,
+      }) });
+    }
+    const wasEditing = !!S.empEditingId;
+    await refresh();
+    S.empModalOpen = false; S.efError = '';
+    notify(wasEditing ? 'User updated' : 'User added');
+  } catch (e) { S.efError = e.message; render(); }
+}
+async function confirmEmpDelete() {
+  const id = S.empConfirmId;
+  try {
+    await api('admin/employees/' + id, { method:'DELETE' });
+    await refresh(); S.empConfirmId = null; notify('User removed');
+  } catch (e) { S.empConfirmId = null; notify(e.message); }
+}
+async function toggleReveal(id) {
+  if (S.revealed[id] !== undefined) { delete S.revealed[id]; return render(); }
+  try {
+    const d = await api('admin/employees/' + id + '/reveal', { method:'POST' });
+    S.revealed[id] = d.passkey; render();
+  } catch (e) { notify(e.message); }
+}
+
+/* ---- Makers ---- */
+async function addMaker() {
+  const v = ($('#newMaker').value || '').trim();
+  if (!v) return;
+  try {
+    await api('admin/makers', { method:'POST', body: JSON.stringify({ name: v }) });
+    await refresh(); S.newMaker = ''; notify('Maker added');
+  } catch (e) { notify(e.message); }
+}
+async function deleteMaker(id) {
+  try {
+    await api('admin/makers/' + id, { method:'DELETE' });
+    await refresh(); notify('Maker removed');
+  } catch (e) { notify(e.message); }
+}
+function startMakerEdit(id) { S.makerEditId = id; render(); const i = $('#makerEditIn'); if (i) { i.focus(); i.select(); } }
+async function saveMakerEdit() {
+  const v = ($('#makerEditIn').value || '').trim();
+  if (!v) return;
+  try {
+    await api('admin/makers/' + S.makerEditId, { method:'PATCH', body: JSON.stringify({ name: v }) });
+    await refresh(); S.makerEditId = null; notify('Maker renamed');
+  } catch (e) { notify(e.message); }
+}
+
+/* ---- Categories / settings ---- */
+async function addCategory() {
+  const v = ($('#newCat').value || '').trim();
+  if (!v) return;
+  try {
+    await api('admin/categories', { method:'POST', body: JSON.stringify({ name: v }) });
+    await refresh(); notify('Category added');
+  } catch (e) { notify(e.message); }
+}
+function startCatEdit(id) { S.catEditId = id; render(); const i = $('#catEditIn'); if (i) { i.focus(); i.select(); } }
+async function saveCatEdit() {
+  const v = ($('#catEditIn').value || '').trim();
+  if (!v) return;
+  try {
+    await api('admin/categories/' + S.catEditId, { method:'PATCH', body: JSON.stringify({ name: v }) });
+    await refresh(); S.catEditId = null; notify('Category renamed');
+  } catch (e) { notify(e.message); }
+}
+async function deleteCategory(id) {
+  try {
+    await api('admin/categories/' + id, { method:'DELETE' });
+    await refresh(); notify('Category removed');
+  } catch (e) { notify(e.message); }
+}
+function pickLogo() { document.getElementById('logoIn').click(); }
+function onLogoFile(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const img = new Image();
+  img.onload = async () => {
+    const c = document.createElement('canvas');
+    const scale = Math.min(1, 256 / Math.max(img.width, img.height));
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const dataUrl = c.toDataURL('image/png');
+    try {
+      await api('admin/settings', { method:'PATCH', body: JSON.stringify({ logo_url: dataUrl }) });
+      S.logoUrl = dataUrl; notify('Logo updated'); render();
+    } catch (e) { notify(e.message); }
+  };
+  img.src = URL.createObjectURL(f);
+  ev.target.value = '';
+}
+async function removeLogo() {
+  try {
+    await api('admin/settings', { method:'PATCH', body: JSON.stringify({ logo_url: '' }) });
+    S.logoUrl = ''; notify('Logo removed'); render();
+  } catch (e) { notify(e.message); }
+}
+async function saveShopName() {
+  const v = ($('#shopNameIn').value || '').trim();
+  if (!v) return;
+  try {
+    await api('admin/settings', { method:'PATCH', body: JSON.stringify({ shop_name: v }) });
+    S.shopName = v; notify('Shop name saved'); render();
+  } catch (e) { notify(e.message); }
+}
+async function saveAccount() {
+  const email = ($('#accEmail').value || '').trim();
+  const pw = $('#accPw').value || '';
+  if (!email && !pw) return notify('Nothing to change');
+  try {
+    const d = await api('admin/account', { method:'PATCH', body: JSON.stringify({ email, password: pw }) });
+    S.admin = d.admin;
+    await refresh(); notify('Account updated');
+  } catch (e) { notify(e.message); }
+}
+async function addAdmin() {
+  const email = ($('#newAdmEmail').value || '').trim();
+  const pw = $('#newAdmPw').value || '';
+  try {
+    await api('admin/admins', { method:'POST', body: JSON.stringify({ email, password: pw }) });
+    await refresh(); notify('Admin added');
+  } catch (e) { notify(e.message); }
+}
+async function deleteAdmin(id) {
+  try {
+    await api('admin/admins/' + id, { method:'DELETE' });
+    await refresh(); notify('Admin removed');
+  } catch (e) { notify(e.message); }
+}
+
+/* ---- Purchases ---- */
+function sortBy(key) {
+  if (S.sort.key === key) S.sort.dir = S.sort.dir === 'asc' ? 'desc' : 'asc';
+  else S.sort = { key, dir: key === 'date' ? 'desc' : 'asc' };
+  render();
+}
+function sortedList() {
+  const list = S.purchases
+    .filter(r => S.filter === 'All' || r.category === S.filter)
+    .filter(r => S.makerFilter === 'All' || r.maker === S.makerFilter)
+    .filter(r => S.empFilter === 'All' || r.employee === S.empFilter);
+  const k = S.sort.key, dir = S.sort.dir === 'asc' ? 1 : -1;
+  const val = r =>
+    k === 'category' ? r.category.toLowerCase()
+    : k === 'maker' ? r.maker.toLowerCase()
+    : k === 'employee' ? r.employee.toLowerCase()
+    : k === 'amount' ? r.price * r.qty
+    : k === 'qty' ? r.qty
+    : k === 'payment' ? r.payment
+    : r.ts;
+  return list.sort((a, b) => { const x = val(a), y = val(b); return x < y ? -dir : x > y ? dir : 0; });
+}
+function openDetail(id) {
+  const r = S.purchases.find(x => x.id === id); if (!r) return;
+  S.detailOpen = true; S.detailId = id; S.pdConfirmDelete = false;
+  S.pf = { category: r.category, makerId: r.makerId, price: String(r.price), qty: r.qty, payment: r.payment, note: r.note };
+  render();
+}
+function closeDetail() { S.detailOpen = false; S.pdConfirmDelete = false; render(); }
+function readPf() {
+  S.pf = {
+    category: $('#pfCat').value, makerId: $('#pfMaker').value, price: $('#pfPrice').value,
+    qty: $('#pfQty').value, payment: S.pf.payment, note: $('#pfNote').value,
+  };
+}
+async function savePurchase() {
+  readPf();
+  const pf = S.pf;
+  if (!pf.category || !(Number(pf.price) > 0)) return notify('Enter a valid price');
+  try {
+    await api('purchases/' + S.detailId, { method:'PATCH', body: JSON.stringify({
+      category: pf.category, maker_id: pf.makerId, price: pf.price,
+      quantity: Math.max(1, parseInt(pf.qty, 10) || 1), payment: pf.payment, note: pf.note,
+    }) });
+    await refresh(); S.detailOpen = false; notify('Purchase updated');
+  } catch (e) { notify(e.message); }
+}
+function setPay(p) { readPf(); S.pf.payment = p; render(); }
+async function confirmPurchaseDelete() {
+  try {
+    await api('purchases/' + S.detailId, { method:'DELETE' });
+    await refresh(); S.detailOpen = false; S.pdConfirmDelete = false; notify('Purchase deleted');
+  } catch (e) { notify(e.message); }
+}
+
+/* ---- Icons ---- */
+const NAV_IC = {
+  requests: '<path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/><path d="M12 11v4"/>',
+  overview: '<path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-5H4z"/>',
+  employees: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-5 6-5s6 1.6 6 5"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 15.5c2.6.2 4.5 1.7 4.5 4.5"/>',
+  makers: '<path d="M12 3c1.6 2.2 1.6 4.4 0 6.6C10.4 7.4 10.4 5.2 12 3z"/><path d="M12 9.6a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4z"/><path d="M12 18v3"/>',
+  purchases: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+};
+const navIcon = k => '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + NAV_IC[k] + '</svg>';
+const eye = open => open
+  ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>'
+  : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.1A9.5 9.5 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-3.6 4"/><path d="M6.6 6.6A15 15 0 0 0 2 12s3.5 7 10 7a9.5 9.5 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+const IC = {
+  plus: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  plus16: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  edit: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+  trash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg>',
+  x: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2b2622" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;"><path d="M9 6l6 6-6 6"/></svg>',
+  car: '<svg class="car" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9088" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+  flower17: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.6 2.2 1.6 4.4 0 6.6C10.4 7.4 10.4 5.2 12 3z"/><path d="M12 9.6a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4z"/><path d="M12 18v3"/></svg>',
+  check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8fd19e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg>',
+};
+const logoSvg = size => S.logoUrl
+  ? '<img src="' + S.logoUrl + '" alt="Logo" style="width:' + size + 'px;height:' + size + 'px;border-radius:' + Math.round(size * 0.27) + 'px;object-fit:cover;display:block;flex-shrink:0;">'
+  : '<div class="logo-mark" style="width:' + size + 'px;height:' + size + 'px;border-radius:' + Math.round(size * 0.27) + 'px;">' +
+  '<svg width="' + Math.round(size*0.62) + '" height="' + Math.round(size*0.62) + '" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6c1.8 2.4 1.8 4.8 0 7.2-1.8-2.4-1.8-4.8 0-7.2z"/><path d="M12 9.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/><path d="M12 18.6V22"/><path d="M12 22c-2.2 0-4-.9-5-2.4"/><path d="M12 22c2.2 0 4-.9 5-2.4"/></svg></div>';
+
+/* ---- Views ---- */
+function loginView() {
+  return '<div class="login-wrap"><div class="login-card ' + (S.shake ? 'shake' : '') + '">' +
+    '<div class="lockup">' + logoSvg(44) + '<div><p class="w1">' + esc(S.shopName) + '</p><p class="w2">Admin Console</p></div></div>' +
+    '<h1>Sign in</h1><p class="sub">Manage staff, passkeys and every purchase.</p>' +
+    '<label class="f-label">Admin ID</label>' +
+    '<input class="f-in" id="adminId" placeholder="admin@songartcraft.com" value="' + esc(S.adminId) + '" style="margin-bottom:16px;">' +
+    '<label class="f-label">Password</label>' +
+    '<input class="f-in" id="adminPw" type="password" placeholder="••••••••" style="margin-bottom:8px;">' +
+    '<div class="login-err">' + (S.loginError ? '<p>' + esc(S.loginError) + '</p>' : '') + '</div>' +
+    '<button class="primary" onclick="doLogin()">Enter console</button>' +
+    '<p class="login-foot">' + esc(S.shopName) + ' admin access</p>' +
+  '</div></div>';
+}
+
+function sidebar() {
+  const nav = [['overview','Overview'],['employees','Employees'],['makers','Made by'],['purchases','Purchases'],['requests','Delete requests'],['settings','Settings']];
+  const counts = { employees: S.employees.length, makers: S.makers.length, purchases: S.purchases.length, requests: S.deleteRequests.length };
+  return '<aside>' +
+    '<div class="side-lockup">' + logoSvg(40) + '<div><p class="w1">' + esc(S.shopName) + '</p><p class="w2">Admin Console</p></div></div>' +
+    nav.map(([k, label]) =>
+      '<button class="nav-item ' + (S.tab === k ? 'on' : '') + '" onclick="go(\'' + k + '\')">' +
+        '<span style="display:inline-flex;">' + navIcon(k) + '</span><span class="lbl">' + label + '</span>' +
+        (counts[k] !== undefined ? '<span class="bdg">' + counts[k] + '</span>' : '') +
+      '</button>').join('') +
+    '<div style="flex:1;"></div>' +
+    '<div class="admin-card"><div class="row"><div class="av">A</div><div style="min-width:0;"><p class="n1">Administrator</p><p class="n2">' + esc(S.admin.email) + '</p></div></div>' +
+    '<button class="signout" onclick="logout()">Sign out</button></div>' +
+  '</aside>';
+}
+
+const TITLES = {
+  overview: ['Overview', "Today's performance and latest activity."],
+  employees: ['Employees', 'Add staff, manage their passkeys and access.'],
+  makers: ['Made by', 'Manage the makers products can be attributed to.'],
+  purchases: ['Purchases', 'Every logged product — view, edit or remove.'],
+  requests: ['Delete requests', 'Deletions staff have asked for — approve or reject.'],
+  settings: ['Settings', 'Shop branding, categories and admin access.'],
+};
+
+async function approveRequest(purchaseId) {
+  try {
+    await api('purchases/' + purchaseId, { method:'DELETE' });
+    await refresh(); notify('Purchase deleted');
+  } catch (e) { notify(e.message); }
+}
+async function rejectRequest(id) {
+  try {
+    await api('admin/delete-requests/' + id, { method:'DELETE' });
+    await refresh(); notify('Request rejected');
+  } catch (e) { notify(e.message); }
+}
+function requestsView() {
+  if (!S.deleteRequests.length) {
+    return '<div class="panel"><div style="padding:40px 22px; text-align:center; color:#a89e92; font-size:14px;">No pending delete requests. When staff tap &ldquo;Request delete&rdquo; in the capture app, the request appears here.</div></div>';
+  }
+  return '<div class="panel">' +
+    '<div class="thead" style="grid-template-columns:2fr 1.2fr 1.2fr 0.9fr 1.1fr 1.4fr;"><span>Product</span><span>Requested by</span><span>Logged by</span><span>Amount</span><span>Requested</span><span style="text-align:right;">Actions</span></div>' +
+    S.deleteRequests.map(d =>
+      '<div class="trow" style="grid-template-columns:2fr 1.2fr 1.2fr 0.9fr 1.1fr 1.4fr;">' +
+        '<div class="cell-prod"><div class="thumb">' + (d.photo_url ? '<img src="' + d.photo_url + '" alt="">' : '') + '</div>' +
+        '<div style="min-width:0;"><p class="cat">' + esc(d.category) + '</p><p style="margin:2px 0 0; font-size:11.5px; color:#9a9088;">' + esc(d.maker || '') + '</p></div></div>' +
+        '<span class="c-dim">' + esc(d.requested_by) + '</span>' +
+        '<span class="c-dim">' + esc(d.logged_by || '—') + '</span>' +
+        '<span class="c-price">' + money(Number(d.price) * d.quantity) + '</span>' +
+        '<span class="c-date">' + fmtDate(new Date(d.created_at).getTime()) + '</span>' +
+        '<div style="display:flex; gap:8px; justify-content:flex-end;">' +
+          '<button class="mini-cancel" onclick="rejectRequest(\'' + d.id + '\')">Reject</button>' +
+          '<button class="mini-btn" style="background:#c0392b;" onclick="approveRequest(\'' + d.purchase_id + '\')">Approve &amp; delete</button>' +
+        '</div>' +
+      '</div>').join('') +
+  '</div>';
+}
+
+function prodCell(r) {
+  return '<div class="cell-prod">' +
+    '<div class="thumb">' + (r.photo ? '<img src="' + r.photo + '" alt="">' : '') + '</div>' +
+    '<div style="min-width:0;"><p class="cat">' + esc(r.category) + '</p>' + (r.updatedTs ? '<p class="edited">edited</p>' : '') + '</div>' +
+  '</div>';
+}
+
+function overviewView() {
+  const totalRev = S.purchases.reduce((a, r) => a + r.price * r.qty, 0);
+  const today = S.purchases.filter(r => isToday(r.ts));
+  const todayRev = today.reduce((a, r) => a + r.price * r.qty, 0);
+  const activeEmp = S.employees.filter(e => e.status === 'Active').length;
+  const stats = [
+    ['Total revenue', money(totalRev), 'all recorded', '#d24d84'],
+    ['Today', money(todayRev), today.length + ' captures', '#2b2622'],
+    ['Purchases', String(S.purchases.length), 'total logged', '#2b2622'],
+    ['Staff', String(activeEmp), 'active of ' + S.employees.length, '#2b2622'],
+  ];
+  return '<div class="stats-grid">' +
+    stats.map(s => '<div class="stat-card"><p class="lab">' + s[0] + '</p><p class="val" style="color:' + s[3] + ';">' + s[1] + '</p><p class="sub">' + s[2] + '</p></div>').join('') +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="panel-head"><h2>Recent purchases</h2><button class="link-btn" onclick="go(\'purchases\')">View all</button></div>' +
+      S.purchases.slice(0, 5).map(r =>
+        '<button class="trow g-recent" onclick="openDetail(\'' + r.id + '\')">' +
+          '<div class="cell-prod"><div class="thumb" style="width:40px;height:40px;">' + (r.photo ? '<img src="' + r.photo + '" alt="">' : '') + '</div><span style="font-size:14px;font-weight:700;">' + esc(r.category) + '</span></div>' +
+          '<span class="c-dim">' + esc(r.employee) + '</span>' +
+          '<span style="font-size:14px;font-weight:700;color:#d24d84;">' + money(r.price * r.qty) + '</span>' +
+          '<span class="c-dim">' + esc(r.payment) + '</span>' +
+          '<span class="c-date" style="text-align:right;">' + fmtDate(r.ts) + '</span>' +
+        '</button>').join('') +
+    '</div>';
+}
+
+function employeesView() {
+  return '<div class="panel">' +
+    '<div class="thead g-emp"><span>Employee</span><span>Contact</span><span>Passkey</span><span>Role</span><span>Status</span><span style="text-align:right;">Actions</span></div>' +
+    S.employees.map(e => {
+      const rev = S.revealed[e.id];
+      return '<div class="trow g-emp">' +
+        '<div style="display:flex; align-items:center; gap:11px; min-width:0;">' +
+          '<div class="emp-av">' + inits(e.first_name, e.last_name) + '</div>' +
+          '<div style="min-width:0;"><p class="emp-name">' + esc(e.first_name + ' ' + e.last_name) + '</p></div>' +
+        '</div>' +
+        '<div style="min-width:0;"><p class="emp-mail">' + esc(e.email || '—') + '</p><p class="emp-phone">' + esc(e.phone || '') + '</p></div>' +
+        '<div style="display:flex; align-items:center; gap:7px;"><span class="code">' + (rev !== undefined ? esc(rev) : '••••••') + '</span>' +
+          '<button class="eye ' + (rev !== undefined ? 'on' : '') + '" aria-label="Reveal" onclick="toggleReveal(\'' + e.id + '\')">' + eye(rev !== undefined) + '</button></div>' +
+        '<span class="c-dim">' + esc(e.role) + '</span>' +
+        '<span class="pill ' + (e.status === 'Active' ? 'active' : 'inactive') + '">' + esc(e.status) + '</span>' +
+        '<div style="display:flex; gap:8px; justify-content:flex-end;">' +
+          '<button class="act-btn" aria-label="Edit" onclick="openEditEmp(\'' + e.id + '\')">' + IC.edit + '</button>' +
+          '<button class="act-btn danger" aria-label="Delete" onclick="S.empConfirmId=\'' + e.id + '\';render()">' + IC.trash + '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+function makersView() {
+  const counts = {};
+  S.purchases.forEach(r => { counts[r.maker] = (counts[r.maker] || 0) + 1; });
+  return '<div style="max-width:720px;">' +
+    '<div class="maker-card">' +
+      '<h2>Add a maker</h2>' +
+      '<p class="sub">Names added here appear in the staff app&rsquo;s &ldquo;Made by&rdquo; dropdown. The default workshop is ' + esc(S.shopName) + '.</p>' +
+      '<div class="maker-row">' +
+        '<input id="newMaker" placeholder="Employee or maker name…" value="' + esc(S.newMaker) + '" onkeydown="if(event.key===\'Enter\')addMaker()">' +
+        '<button class="maker-add" onclick="addMaker()">' + IC.plus16 + 'Add</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="thead g-makers"><span>Maker</span><span>Attributed</span><span style="text-align:right;">Actions</span></div>' +
+      S.makers.map(m =>
+        '<div class="trow g-makers">' +
+          (S.makerEditId === m.id
+            ? '<div class="inline-edit"><div class="m-av">' + IC.flower17 + '</div>' +
+              '<input id="makerEditIn" value="' + esc(m.name) + '" onkeydown="if(event.key===\'Enter\')saveMakerEdit();if(event.key===\'Escape\'){S.makerEditId=null;render()}">' +
+              '<button class="mini-btn" onclick="saveMakerEdit()">Save</button>' +
+              '<button class="mini-cancel" onclick="S.makerEditId=null;render()">Cancel</button></div>'
+            : '<div style="display:flex; align-items:center; gap:11px;">' +
+              '<div class="m-av">' + IC.flower17 + '</div>' +
+              '<span class="m-name">' + esc(m.name) + '</span>' +
+              (m.is_default ? '<span class="def-pill">Default</span>' : '') +
+            '</div>') +
+          '<span class="c-dim">' + (counts[m.name] || 0) + ' products</span>' +
+          '<div style="display:flex; gap:8px; justify-content:flex-end;">' +
+            '<button class="act-btn" aria-label="Rename" onclick="startMakerEdit(\'' + m.id + '\')">' + IC.edit + '</button>' +
+            (m.is_default ? '' : '<button class="act-btn danger" aria-label="Remove" onclick="deleteMaker(\'' + m.id + '\')">' + IC.trash + '</button>') +
+          '</div>' +
+        '</div>').join('') +
+    '</div>' +
+  '</div>';
+}
+
+function purchasesView() {
+  const makerNames = ['All', ...S.makers.map(m => m.name)];
+  const empNames = ['All', ...S.employees.map(e => e.first_name + ' ' + e.last_name)];
+  const list = sortedList();
+  const th = (key, label, right) => {
+    const on = S.sort.key === key;
+    const arrow = on ? (S.sort.dir === 'asc' ? '&#9650;' : '&#9660;') : '';
+    return '<span class="th-sort ' + (on ? 'on' : '') + '"' + (right ? ' style="justify-self:end;"' : '') + ' onclick="sortBy(\'' + key + '\')">' + label + (arrow ? ' <span style="font-size:9px;">' + arrow + '</span>' : '') + '</span>';
+  };
+  return '<div class="chips2"><span class="mlab">Category</span>' +
+      ['All', ...catNames()].map(c => '<button class="chip ' + (S.filter === c ? 'on' : '') + '" onclick="S.filter=\'' + jsq(c) + '\';render()">' + esc(c) + '</button>').join('') +
+    '</div>' +
+    '<div class="chips2"><span class="mlab">Made by</span>' +
+      makerNames.map(m => '<button class="chip ' + (S.makerFilter === m ? 'on' : '') + '" onclick="S.makerFilter=\'' + jsq(m) + '\';render()">' + esc(m) + '</button>').join('') +
+    '</div>' +
+    '<div class="chips2" style="margin-bottom:18px;"><span class="mlab">Employee</span>' +
+      empNames.map(m => '<button class="chip ' + (S.empFilter === m ? 'on' : '') + '" onclick="S.empFilter=\'' + jsq(m) + '\';render()">' + esc(m) + '</button>').join('') +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="thead g-purch">' +
+        th('category', 'Product') + th('maker', 'Made by') + th('employee', 'Employee') +
+        th('amount', 'Amount') + th('qty', 'Qty') + th('payment', 'Payment') + th('date', 'Date') +
+        '<span style="text-align:right;">View</span>' +
+      '</div>' +
+      (list.length ? list.map(r =>
+        '<button class="trow g-purch" onclick="openDetail(\'' + r.id + '\')">' +
+          prodCell(r) +
+          '<span class="c-maker">' + esc(r.maker) + '</span>' +
+          '<span class="c-dim">' + esc(r.employee) + '</span>' +
+          '<span class="c-price">' + money(r.price * r.qty) + '</span>' +
+          '<span class="c-dim">' + r.qty + '</span>' +
+          '<span class="c-dim">' + esc(r.payment) + '</span>' +
+          '<span class="c-date">' + fmtDate(r.ts) + '</span>' +
+          '<span style="text-align:right; color:#d24d84;">' + IC.chev + '</span>' +
+        '</button>').join('')
+      : '<div style="padding:32px 22px; text-align:center; color:#a89e92; font-size:14px;">No purchases match this filter.</div>') +
+    '</div>';
+}
+
+function settingsView() {
+  const counts = {};
+  S.purchases.forEach(r => { counts[r.category] = (counts[r.category] || 0) + 1; });
+  return '<div class="set-col">' +
+    '<div class="set-card"><h2>Shop</h2><p class="sub">Name and logo shown across the console and the staff capture app.</p>' +
+      '<label class="m-label">Shop name</label>' +
+      '<div class="set-row"><input id="shopNameIn" value="' + esc(S.shopName) + '" onkeydown="if(event.key===\'Enter\')saveShopName()">' +
+      '<button class="mini-btn" style="padding:13px 20px;" onclick="saveShopName()">Save</button></div>' +
+      '<label class="m-label" style="margin-top:18px;">Company logo</label>' +
+      '<div style="display:flex; align-items:center; gap:14px;">' +
+        logoSvg(64) +
+        '<button class="mini-btn" onclick="pickLogo()">Upload new logo</button>' +
+        (S.logoUrl ? '<button class="mini-cancel" onclick="removeLogo()">Remove</button>' : '') +
+      '</div>' +
+      '<p class="set-note">Square images look best. It replaces the flower mark on the login screens and sidebar.</p></div>' +
+
+    '<div class="set-card"><h2>Product categories</h2><p class="sub">Options staff choose from when logging a product. Renaming updates every existing purchase; a category in use can&rsquo;t be deleted.</p>' +
+      S.categories.map(c =>
+        '<div class="cat-row">' +
+          (S.catEditId === c.id
+            ? '<div class="inline-edit"><input id="catEditIn" value="' + esc(c.name) + '" onkeydown="if(event.key===\'Enter\')saveCatEdit();if(event.key===\'Escape\'){S.catEditId=null;render()}">' +
+              '<button class="mini-btn" onclick="saveCatEdit()">Save</button>' +
+              '<button class="mini-cancel" onclick="S.catEditId=null;render()">Cancel</button></div>'
+            : '<span class="nm">' + esc(c.name) + '</span><span class="cnt">' + (counts[c.name] || 0) + ' purchases</span>' +
+              '<button class="act-btn" aria-label="Rename" onclick="startCatEdit(\'' + c.id + '\')">' + IC.edit + '</button>' +
+              '<button class="act-btn danger" aria-label="Delete" onclick="deleteCategory(\'' + c.id + '\')">' + IC.trash + '</button>') +
+        '</div>').join('') +
+      '<div class="set-row" style="margin-top:14px;"><input id="newCat" placeholder="New category name…" onkeydown="if(event.key===\'Enter\')addCategory()">' +
+      '<button class="maker-add" onclick="addCategory()">' + IC.plus16 + 'Add</button></div></div>' +
+
+    '<div class="set-card"><h2>My account</h2><p class="sub">Change the email or password you sign in with. You&rsquo;ll stay signed in.</p>' +
+      '<div class="m-grid">' +
+        '<div><label class="m-label">Email</label><input class="m-in" id="accEmail" type="email" value="' + esc(S.admin.email) + '"></div>' +
+        '<div><label class="m-label">New password (min 8 chars)</label><input class="m-in" id="accPw" type="password" placeholder="Leave blank to keep current"></div>' +
+      '</div>' +
+      '<div class="m-btns" style="max-width:240px;"><button class="m-save" onclick="saveAccount()">Save changes</button></div></div>' +
+
+    '<div class="set-card"><h2>Admin accounts</h2><p class="sub">Everyone listed here can sign in to this console with full access.</p>' +
+      S.admins.map(a =>
+        '<div class="adm-row"><div class="emp-av">' + esc((a.email || '?')[0].toUpperCase()) + '</div>' +
+        '<span class="em">' + esc(a.email) + '</span>' +
+        (a.id === S.admin.id ? '<span class="you-pill">You</span>'
+          : '<button class="act-btn danger" aria-label="Remove" onclick="deleteAdmin(\'' + a.id + '\')">' + IC.trash + '</button>') +
+        '</div>').join('') +
+      '<div class="form2" style="margin-top:14px;">' +
+        '<input id="newAdmEmail" type="email" placeholder="Email">' +
+        '<input id="newAdmPw" type="password" placeholder="Password (min 8 chars)">' +
+        '<button class="maker-add" onclick="addAdmin()">' + IC.plus16 + 'Add admin</button>' +
+      '</div>' +
+      '<p class="set-note">New admins have exactly the same permissions as you.</p></div>' +
+
+    '<div class="set-card"><h2>Access</h2><p class="sub2">Administrators have full control: manage staff and passkeys, and view, edit or delete any purchase along with its full edit history.</p></div>' +
+  '</div>';
+}
+
+function empModal() {
+  const ef = S.ef;
+  return '<div class="modal-wrap"><div class="scrim" onclick="closeEmp()"></div><div class="modal">' +
+    '<div class="modal-head"><h2>' + (S.empEditingId ? 'Edit user' : 'Add user') + '</h2>' +
+    '<button class="mx" aria-label="Close" onclick="closeEmp()">' + IC.x + '</button></div>' +
+    '<div class="m-grid">' +
+      '<div><label class="m-label">First name</label><input class="m-in" id="efFirst" value="' + esc(ef.first) + '"></div>' +
+      '<div><label class="m-label">Last name</label><input class="m-in" id="efLast" value="' + esc(ef.last) + '"></div>' +
+      '<div class="full"><label class="m-label">Email</label><input class="m-in" id="efEmail" type="email" value="' + esc(ef.email) + '"></div>' +
+      '<div><label class="m-label">Phone</label><input class="m-in" id="efPhone" value="' + esc(ef.phone) + '"></div>' +
+      '<div><label class="m-label">Passkey (4–6 digits)</label><input class="m-in mono" id="efCode" inputmode="numeric" maxlength="6" value="' + esc(ef.code) + '" placeholder="' + (S.empEditingId ? 'Unchanged' : '') + '"></div>' +
+      '<div><label class="m-label">Role</label><div class="sel-wrap"><select class="m-in" id="efRole">' +
+        '<option' + (ef.role === 'Employee' ? ' selected' : '') + '>Employee</option><option' + (ef.role === 'Manager' ? ' selected' : '') + '>Manager</option></select>' + IC.car + '</div></div>' +
+      '<div><label class="m-label">Status</label><div class="sel-wrap"><select class="m-in" id="efStatus">' +
+        '<option' + (ef.status === 'Active' ? ' selected' : '') + '>Active</option><option' + (ef.status === 'Inactive' ? ' selected' : '') + '>Inactive</option></select>' + IC.car + '</div></div>' +
+    '</div>' +
+    '<div class="m-err">' + (S.efError ? '<p>' + esc(S.efError) + '</p>' : '') + '</div>' +
+    '<div class="m-btns"><button class="m-cancel" onclick="closeEmp()">Cancel</button>' +
+    '<button class="m-save" onclick="saveEmp()">' + (S.empEditingId ? 'Save changes' : 'Add user') + '</button></div>' +
+  '</div></div>';
+}
+
+function empConfirmModal() {
+  const e = S.employees.find(x => x.id === S.empConfirmId);
+  const name = e ? e.first_name + ' ' + e.last_name : '';
+  return '<div class="modal-wrap" style="z-index:70;"><div class="scrim" onclick="S.empConfirmId=null;render()"></div><div class="confirm">' +
+    '<h2>Remove ' + esc(name) + '?</h2>' +
+    '<p>Their passkey stops working immediately. Purchases they logged are kept.</p>' +
+    '<div class="m-btns" style="margin-top:0;"><button class="m-cancel" style="padding:13px;" onclick="S.empConfirmId=null;render()">Cancel</button>' +
+    '<button class="c-remove" onclick="confirmEmpDelete()">Remove user</button></div>' +
+  '</div></div>';
+}
+
+function slideOver() {
+  const r = S.purchases.find(x => x.id === S.detailId);
+  if (!r) return '';
+  const pf = S.pf;
+  const catOpts = [...new Set([...catNames(), pf.category])];
+  const hist = r.history.length
+    ? '<div class="hist"><p class="ht">Edit history</p><div class="line">' +
+        '<div style="position:relative;"><div class="cur-dot"></div><p class="cv1">Current version</p><p class="cv2">' + (r.updatedTs ? fmtDate(r.updatedTs) + ', ' + fmtTime(r.updatedTs) : fmtDate(r.ts) + ', ' + fmtTime(r.ts)) + '</p></div>' +
+        r.history.map((h, i) =>
+          '<div style="position:relative;"><div class="old-dot"></div><div class="vcard">' +
+            '<div class="vrow"><span class="vlab">Version ' + (r.history.length - i) + '</span><span class="vdate">' + fmtDate(h.ts) + ', ' + fmtTime(h.ts) + '</span></div>' +
+            '<p class="vsum">' + esc(h.category) + ' &middot; ' + money(h.price) + ' &middot; Qty ' + h.qty + ' &middot; ' + esc(h.payment) + (h.maker ? ' &middot; ' + esc(h.maker) : '') + '</p>' +
+          '</div></div>').join('') +
+      '</div></div>'
+    : '';
+  return '<div class="so-wrap">' +
+    '<div class="scrim" style="animation:ac-fade .16s ease; background:rgba(30,22,16,.45);" onclick="closeDetail()"></div>' +
+    '<div class="so">' +
+      '<div class="so-head"><h2>Purchase detail</h2><button class="mx" aria-label="Close" onclick="closeDetail()">' + IC.x + '</button></div>' +
+      '<div class="so-body">' +
+        '<div class="so-photo">' + (r.photo ? '<img src="' + r.photo + '" alt="">' : '<span class="np">no photo</span>') + '</div>' +
+        '<label class="so-label">Category</label>' +
+        '<div class="sel-wrap" style="margin-bottom:14px;"><select class="so-sel" id="pfCat">' +
+          catOpts.map(c => '<option' + (pf.category === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>' + IC.car + '</div>' +
+        '<label class="so-label">Made by</label>' +
+        '<div class="sel-wrap" style="margin-bottom:14px;"><select class="so-sel" id="pfMaker">' +
+          S.makers.map(m => '<option value="' + m.id + '"' + (pf.makerId === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select>' + IC.car + '</div>' +
+        '<div class="so-grid">' +
+          '<div><label class="so-label">Price (' + CUR + ')</label><input class="so-in" id="pfPrice" type="number" value="' + esc(pf.price) + '" style="font-weight:600;"></div>' +
+          '<div><label class="so-label">Quantity</label><input class="so-in" id="pfQty" type="number" min="1" value="' + pf.qty + '"></div>' +
+        '</div>' +
+        '<label class="so-label">Payment</label>' +
+        '<div style="display:flex; gap:10px; margin-bottom:14px;">' +
+          '<button class="pay-btn ' + (pf.payment === 'Cash' ? 'on' : '') + '" onclick="setPay(\'Cash\')">Cash</button>' +
+          '<button class="pay-btn ' + (pf.payment === 'Online' ? 'on' : '') + '" onclick="setPay(\'Online\')">Online</button>' +
+        '</div>' +
+        '<label class="so-label">Note</label>' +
+        '<textarea class="so-in" id="pfNote" rows="2" style="resize:none; margin-bottom:8px;">' + esc(pf.note) + '</textarea>' +
+        '<p class="so-meta">Logged by <strong>' + esc(r.employee) + '</strong> &middot; ' + fmtDate(r.ts) + ', ' + fmtTime(r.ts) + '</p>' +
+        '<div class="so-btns">' +
+          '<button class="so-save" onclick="savePurchase()">Save changes</button>' +
+          (S.pdConfirmDelete ? '' : '<button class="so-del" onclick="S.pdConfirmDelete=true;readPf();render()">Delete</button>') +
+        '</div>' +
+        (S.pdConfirmDelete
+          ? '<div class="so-confirm"><p>Delete this purchase permanently?</p><div class="btns">' +
+            '<button class="c" onclick="S.pdConfirmDelete=false;render()">Cancel</button>' +
+            '<button class="d" onclick="confirmPurchaseDelete()">Delete</button></div></div>'
+          : '') +
+        hist +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function render() {
+  const root = $('#root');
+  if (!S.booted) { root.innerHTML = ''; return; }
+  let html = '';
+  if (!S.admin) {
+    html = loginView();
+  } else {
+    const t = TITLES[S.tab];
+    html = '<div class="shell">' + sidebar() +
+      '<main><header><div><h1>' + t[0] + '</h1><p class="sub">' + t[1] + '</p></div>' +
+      (S.tab === 'employees' ? '<button class="add-btn" onclick="openAddEmp()">' + IC.plus + 'Add user</button>' : '') +
+      '</header><div class="content">' +
+      (S.tab === 'overview' ? overviewView()
+        : S.tab === 'employees' ? employeesView()
+        : S.tab === 'makers' ? makersView()
+        : S.tab === 'purchases' ? purchasesView()
+        : S.tab === 'requests' ? requestsView()
+        : settingsView()) +
+      '</div></main></div>';
+    if (S.empModalOpen) html += empModal();
+    if (S.empConfirmId) html += empConfirmModal();
+    if (S.detailOpen) html += slideOver();
+  }
+  if (S.toast) html += '<div class="toast">' + IC.check + esc(S.toast) + '</div>';
+  root.innerHTML = html;
+  const pw = $('#adminPw');
+  if (pw) pw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+}
+
+document.getElementById('logoIn').addEventListener('change', onLogoFile);
+boot();
+</script>
+</body>
+</html>
