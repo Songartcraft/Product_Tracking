@@ -1,0 +1,10 @@
+# Every endpoint is served by the single router at api/index.js.
+# These per-route files stay in the repo for reference but must not be
+# deployed as separate functions (Hobby plan allows only 12).
+api/health.js
+api/bootstrap.js
+api/logout.js
+api/admin/
+api/staff/
+api/purchases/
+api/products/
