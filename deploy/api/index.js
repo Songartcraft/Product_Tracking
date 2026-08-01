@@ -19,6 +19,10 @@ function requireAdmin(req, res) {
   if (!s || s.t !== 'admin') { fail(res, 401, 'Admin only'); return null; }
   return s;
 }
+async function findProduct(id) {
+  const all = await rpc3('list_products');
+  return (all || []).find((p) => p.id === id) || null;
+}
 
 module.exports = async (req, res) => {
   const m = req.method;
@@ -75,7 +79,9 @@ module.exports = async (req, res) => {
         categories = [{ id: 'c1', name: 'Glass Flower' }, { id: 'c2', name: 'Glass Petals' }, { id: 'c3', name: 'Glass Artifact' }];
       }
       let productCategories = [];
+      let roles = [];
       try { productCategories = (await rpc3('list_product_categories')) || []; } catch (e) {}
+      try { roles = (await rpc3('list_roles')) || []; } catch (e) {}
 
       if (!session) {
         return res.status(200).json({ session: null, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories });
@@ -83,7 +89,7 @@ module.exports = async (req, res) => {
       const [makers, purchases] = await Promise.all([rpc('list_makers'), rpc('list_purchases')]);
       let products = [];
       try { products = (await rpc3('list_products')) || []; } catch (e) {}
-      const out = { session, makers, purchases, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories, products };
+      const out = { session, makers, purchases, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories, products, roles };
       try { out.delete_requests = await rpc2('list_delete_requests'); } catch (e) { out.delete_requests = []; }
       if (session.t === 'admin') {
         out.employees = await rpc('list_employees');
@@ -136,7 +142,9 @@ module.exports = async (req, res) => {
     /* ---------- products ---------- */
     if (a === 'products') {
       const s = requireSession(req, res); if (!s) return;
+
       if (!b && m === 'GET') return res.status(200).json({ products: await rpc3('list_products') });
+
       if (!b && m === 'POST') {
         const x = body(req);
         const name = String(x.name || '').trim();
@@ -149,7 +157,31 @@ module.exports = async (req, res) => {
         });
         return res.status(200).json({ product });
       }
+
+      // Mark a product as sold — any signed-in staff member may record a sale
+      if (b && c === 'sell' && m === 'POST') {
+        const x = body(req);
+        if (!(Number(x.sold_price) > 0)) return fail(res, 400, 'Enter a sold price greater than zero.');
+        await rpc3('sell_product', {
+          id: b,
+          sold_price: String(Number(x.sold_price)),
+          sold_by: s.t === 'staff' ? s.id : '',
+        });
+        return res.status(200).json({ ok: true });
+      }
+
+      // Undo a sale
+      if (b && c === 'unsell' && m === 'POST') {
+        await rpc3('unsell_product', { id: b });
+        return res.status(200).json({ ok: true });
+      }
+
       if (b && m === 'PATCH') {
+        if (s.t === 'staff') {
+          const p = await findProduct(b);
+          if (!p) return fail(res, 404, 'Product not found.');
+          if (p.employee_id !== s.id) return fail(res, 403, 'You can only edit products you added.');
+        }
         const x = body(req);
         const payload = { id: b };
         if (x.name !== undefined) {
@@ -167,7 +199,16 @@ module.exports = async (req, res) => {
         await rpc3('update_product', payload);
         return res.status(200).json({ ok: true });
       }
-      if (b && m === 'DELETE') { await rpc3('delete_product', { id: b }); return res.status(200).json({ ok: true }); }
+
+      if (b && m === 'DELETE') {
+        if (s.t === 'staff') {
+          const p = await findProduct(b);
+          if (!p) return fail(res, 404, 'Product not found.');
+          if (p.employee_id !== s.id) return fail(res, 403, 'You can only delete products you added.');
+        }
+        await rpc3('delete_product', { id: b });
+        return res.status(200).json({ ok: true });
+      }
     }
 
     /* ---------- admin ---------- */
@@ -180,6 +221,7 @@ module.exports = async (req, res) => {
           const first = String(x.first_name || '').trim();
           const last = String(x.last_name || '').trim();
           const passkey = String(x.passkey || '');
+          const role = String(x.role || '').trim() || 'Employee';
           if (!first || !last) return fail(res, 400, 'First and last name are required.');
           if (!/^\d{4,6}$/.test(passkey)) return fail(res, 400, 'Passkey must be 4 to 6 digits.');
           try {
@@ -188,7 +230,7 @@ module.exports = async (req, res) => {
               email: (x.email || '').trim(), phone: (x.phone || '').trim(),
               passkey_hash: await bcrypt.hash(passkey, 10),
               passkey_lookup: sha256hex(passkey),
-              role: x.role === 'Manager' ? 'Manager' : 'Employee',
+              role,
               status: x.status === 'Inactive' ? 'Inactive' : 'Active',
             });
             try { await rpc2('store_passkey_enc', { id: employee.id, passkey }); } catch (e) {}
@@ -209,7 +251,7 @@ module.exports = async (req, res) => {
           if (x.last_name !== undefined) payload.last_name = String(x.last_name).trim();
           if (x.email !== undefined) payload.email = String(x.email).trim();
           if (x.phone !== undefined) payload.phone = String(x.phone).trim();
-          if (x.role !== undefined) payload.role = x.role === 'Manager' ? 'Manager' : 'Employee';
+          if (x.role !== undefined) payload.role = String(x.role).trim() || 'Employee';
           if (x.status !== undefined) payload.status = x.status === 'Inactive' ? 'Inactive' : 'Active';
           if (x.passkey) {
             if (!/^\d{4,6}$/.test(String(x.passkey))) return fail(res, 400, 'Passkey must be 4 to 6 digits.');
@@ -232,6 +274,29 @@ module.exports = async (req, res) => {
             throw e;
           }
         }
+      }
+
+      if (b === 'roles') {
+        if (!c && m === 'GET') return res.status(200).json({ roles: await rpc3('list_roles') });
+        if (!c && m === 'POST') {
+          const name = String(x.name || '').trim();
+          if (!name) return fail(res, 400, 'Enter a role name');
+          try { return res.status(200).json({ role: await rpc3('create_role', { name }) }); }
+          catch (e) {
+            if (e.code === '23505' || /duplicate|unique/i.test(e.message)) return fail(res, 409, 'That role already exists.');
+            throw e;
+          }
+        }
+        if (c && m === 'PATCH') {
+          const name = String(x.name || '').trim();
+          if (!name) return fail(res, 400, 'Enter a role name');
+          try { return res.status(200).json({ role: await rpc3('rename_role', { id: c, name }) }); }
+          catch (e) {
+            if (e.code === '23505' || /duplicate|unique/i.test(e.message)) return fail(res, 409, 'That role already exists.');
+            throw e;
+          }
+        }
+        if (c && m === 'DELETE') { await rpc3('delete_role', { id: c }); return res.status(200).json({ ok: true }); }
       }
 
       if (b === 'makers') {
