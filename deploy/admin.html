@@ -56,7 +56,7 @@ header .sub{margin:4px 0 0;font-size:13.5px;color:#9a9088}
 .add-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;border:none;background:#d24d84;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(210,77,132,.26)}
 .content{flex:1;overflow-y:auto;padding:30px 34px 60px}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:30px}
-.stats-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:22px;max-width:520px}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px;max-width:780px}
 .stat-card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 2px 10px rgba(60,45,30,.05)}
 .stat-card .lab{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#a89e92;font-weight:700}
 .stat-card .val{margin:10px 0 0;font-family:'Instrument Serif',serif;font-size:38px;line-height:1}
@@ -74,7 +74,7 @@ button.trow{cursor:pointer}
 .g-emp{grid-template-columns:2fr 2.2fr 1.2fr 1fr 1fr 1fr}
 .g-mak{grid-template-columns:2.4fr 1fr .8fr}
 .g-pur{grid-template-columns:1.8fr 1.2fr 1.2fr .9fr .7fr 1fr 1.1fr .6fr}
-.g-prod{grid-template-columns:2fr 1fr 1.2fr .9fr 1.1fr .9fr}
+.g-prod{grid-template-columns:2fr 1fr 1.2fr .9fr .9fr 1fr .9fr}
 .g-req{grid-template-columns:2fr 1.2fr 1.2fr .9fr 1fr 1.4fr}
 .thumb{position:relative;width:42px;height:42px;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(45deg,#efe7db,#efe7db 5px,#f6f0e6 5px,#f6f0e6 10px);flex-shrink:0}
 .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -83,6 +83,7 @@ button.trow{cursor:pointer}
 .cell .ed{margin:2px 0 0;font-size:11.5px;color:#d24d84;font-weight:600}
 .c-dim{font-size:13.5px;color:#6b625a}
 .c-price{font-size:14.5px;font-weight:700;color:#d24d84}
+.c-green{font-size:14.5px;font-weight:700;color:#3f7d4f}
 .c-maker{font-size:13.5px;font-weight:700;color:#a83168}
 .c-date{font-size:13px;color:#9a9088}
 .emp-av{width:38px;height:38px;border-radius:50%;background:#fbe4ef;color:#a83168;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
@@ -95,6 +96,7 @@ button.trow{cursor:pointer}
 .pill{justify-self:start;font-size:12.5px;font-weight:700;padding:4px 11px;border-radius:999px}
 .pill.active{background:#e4f1e6;color:#3f7d4f}.pill.inactive{background:#efe7db;color:#9a8b78}
 .cat-chip{font-size:12px;font-weight:700;color:#a83168;background:#fbe4ef;padding:4px 11px;border-radius:999px;display:inline-block}
+.sold-chip{font-size:11.5px;font-weight:800;color:#3f7d4f;background:#e4f1e6;padding:4px 10px;border-radius:999px;display:inline-block}
 .act-btn{width:34px;height:34px;border-radius:9px;border:1px solid #e9e3da;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b625a}
 .act-btn.danger{border-color:#e7c9bf;color:#c0392b}
 .card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 2px 10px rgba(60,45,30,.05);margin-bottom:18px}
@@ -183,10 +185,10 @@ button.trow{cursor:pointer}
 <script>
 const CUR='£';
 const S={booted:false,admin:null,tab:'overview',adminId:'',loginError:'',shake:false,busy:false,
-employees:[],makers:[],purchases:[],categories:[],admins:[],deleteRequests:[],products:[],productCats:[],
+employees:[],makers:[],purchases:[],categories:[],admins:[],deleteRequests:[],products:[],productCats:[],roles:[],
 shopName:'Song Art & Craft',logoUrl:'',
 filter:'All',makerFilter:'All',empFilter:'All',sort:{key:'date',dir:'desc'},
-prodEmpFilter:'All',makerEditId:null,catEditId:null,pcatEditId:null,
+prodEmpFilter:'All',makerEditId:null,catEditId:null,roleEditId:null,
 empModalOpen:false,empEditingId:null,ef:null,efError:'',empConfirmId:null,revealed:{},
 prodModalOpen:false,prodEditingId:null,pf2:null,pfError:'',prodConfirmId:null,
 detailOpen:false,detailId:null,pf:null,pdConfirmDelete:false,toast:''};
@@ -200,6 +202,7 @@ const fmtTime=ts=>new Date(ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute
 const isToday=ts=>new Date(ts).toDateString()===new Date().toDateString();
 const inits=(f,l)=>((f&&f[0]||'')+(l&&l[0]||'')).toUpperCase();
 const catNames=()=>S.categories.map(c=>c.name);
+const roleNames=()=>S.roles.length?S.roles.map(r=>r.name):['Employee','Manager'];
 
 async function api(path,opts={}){
   const r=await fetch('/api/'+path,{credentials:'same-origin',headers:{'content-type':'application/json'},...opts});
@@ -219,6 +222,7 @@ function apply(d){
   if(d.logo_url!==undefined)S.logoUrl=d.logo_url||'';
   S.admins=d.admins||S.admins;S.deleteRequests=d.delete_requests||[];
   S.products=d.products||[];S.productCats=d.product_categories||S.productCats;
+  S.roles=d.roles||S.roles;
 }
 async function boot(){
   try{const d=await api('bootstrap');S.categories=d.categories||[];S.shopName=d.shop_name||S.shopName;
@@ -243,7 +247,7 @@ async function logout(){try{await api('logout',{method:'POST'})}catch(e){}
   Object.assign(S,{admin:null,adminId:'',tab:'overview',employees:[],purchases:[],admins:[],revealed:{},detailOpen:false,empModalOpen:false});render();}
 function go(t){S.tab=t;render();}
 
-function blankEf(){return{first:'',last:'',email:'',phone:'',code:'',role:'Employee',status:'Active'};}
+function blankEf(){return{first:'',last:'',email:'',phone:'',code:'',role:(roleNames()[0]||'Employee'),status:'Active'};}
 function openAddEmp(){S.empModalOpen=true;S.empEditingId=null;S.ef=blankEf();S.efError='';render();}
 function openEditEmp(id){const e=S.employees.find(x=>x.id===id);if(!e)return;
   S.empModalOpen=true;S.empEditingId=id;S.efError='';
@@ -288,6 +292,13 @@ async function delCat(id){try{await api('admin/categories/'+id,{method:'DELETE'}
 async function addPcat(){const v=($('#newPcat').value||'').trim();if(!v)return;
   try{await api('admin/product-categories',{method:'POST',body:JSON.stringify({name:v})});await refresh();notify('Category added');}catch(e){notify(e.message);}}
 async function delPcat(id){try{await api('admin/product-categories/'+id,{method:'DELETE'});await refresh();notify('Category removed');}catch(e){notify(e.message);}}
+
+async function addRole(){const v=($('#newRole').value||'').trim();if(!v)return;
+  try{await api('admin/roles',{method:'POST',body:JSON.stringify({name:v})});await refresh();notify('Role added');}catch(e){notify(e.message);}}
+function editRole(id){S.roleEditId=id;render();const i=$('#roleEditIn');if(i){i.focus();i.select();}}
+async function saveRole(){const v=($('#roleEditIn').value||'').trim();if(!v)return;
+  try{await api('admin/roles/'+S.roleEditId,{method:'PATCH',body:JSON.stringify({name:v})});await refresh();S.roleEditId=null;notify('Role renamed');}catch(e){notify(e.message);}}
+async function delRole(id){try{await api('admin/roles/'+id,{method:'DELETE'});await refresh();notify('Role removed');}catch(e){notify(e.message);}}
 
 async function saveShopName(){const v=($('#shopNameIn').value||'').trim();if(!v)return;
   try{await api('admin/settings',{method:'PATCH',body:JSON.stringify({shop_name:v})});S.shopName=v;notify('Shop name saved');render();}catch(e){notify(e.message);}}
@@ -342,7 +353,11 @@ async function saveProd(){
   if(!(Number(f.price)>0)){S.pfError='Enter a price greater than zero.';return render();}
   try{await api('products/'+S.prodEditingId,{method:'PATCH',body:JSON.stringify({name:f.name,price:f.price,note:f.note,category_id:f.categoryId})});
     await refresh();S.prodModalOpen=false;notify('Product updated');}catch(e){S.pfError=e.message;render();}}
-async function delProd(id){try{await api('products/'+id,{method:'DELETE'});await refresh();S.prodConfirmId=null;notify('Product deleted');}catch(e){S.prodConfirmId=null;notify(e.message);}}
+async function delProd(id){
+  try{await api('products/'+id,{method:'DELETE'});await refresh();S.prodConfirmId=null;notify('Product deleted');}
+  catch(e){S.prodConfirmId=null;notify(e.message);render();}}
+async function unsellProd(id){
+  try{await api('products/'+id+'/unsell',{method:'POST'});await refresh();notify('Sale removed');}catch(e){notify(e.message);}}
 
 const NAV={overview:'<path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-5H4z"/>',
 employees:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.4 2.7-5 6-5s6 1.6 6 5"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 15.5c2.6.2 4.5 1.7 4.5 4.5"/>',
@@ -385,13 +400,13 @@ ${nav.map(([k,l])=>`<button class='nav-item ${S.tab===k?'on':''}' onclick="go('$
 <button class='signout' onclick='logout()'>Sign out</button></div></aside>`;}
 
 const TITLES={overview:['Overview',"Today's performance and latest activity."],
-employees:['Employees','Add staff, manage their passkeys and access.'],
+employees:['Employees','Add staff, manage their passkeys, roles and access.'],
 makers:['Made by','Manage the makers products can be attributed to.'],
 purchases:['Purchases','Every logged sale — sort, filter, edit or remove.'],
 products:['Products','The shared product catalogue added by your staff.'],
 categories:['Categories','Product categories staff choose from.'],
 requests:['Delete requests','Deletions staff have asked for — approve or reject.'],
-settings:['Settings','Shop branding, sale categories and admin access.']};
+settings:['Settings','Shop branding, sale categories, roles and admin access.']};
 
 function overview(){
   const tot=S.purchases.reduce((a,r)=>a+r.price*r.qty,0);
@@ -447,18 +462,26 @@ ${l.length?l.map(r=>`<button class='trow g-pur' onclick="openDetail('${r.id}')">
 
 function products(){
   const list=S.products.filter(p=>S.prodEmpFilter==='All'||p.employee===S.prodEmpFilter);
-  const worth=list.reduce((a,p)=>a+Number(p.price),0);
+  const unsold=list.filter(p=>!p.sold_at);
+  const worth=unsold.reduce((a,p)=>a+Number(p.price),0);
+  const sales=list.filter(p=>p.sold_at).reduce((a,p)=>a+Number(p.sold_price||0),0);
   const em=['All',...Array.from(new Set(S.products.map(p=>p.employee)))];
-  return `<div class='stats-2'><div class='stat-card'><p class='lab'>Products</p><p class='val'>${list.length}</p><p class='sub'>${S.prodEmpFilter==='All'?'in the catalogue':'by '+esc(S.prodEmpFilter)}</p></div>
-<div class='stat-card'><p class='lab'>Total worth</p><p class='val' style='color:#d24d84'>${money(worth)}</p><p class='sub'>combined value</p></div></div>
+  return `<div class='stats-3'>
+<div class='stat-card'><p class='lab'>Products</p><p class='val'>${list.length}</p><p class='sub'>${S.prodEmpFilter==='All'?'in the catalogue':'by '+esc(S.prodEmpFilter)}</p></div>
+<div class='stat-card'><p class='lab'>Unsold worth</p><p class='val' style='color:#d24d84'>${money(worth)}</p><p class='sub'>${unsold.length} still available</p></div>
+<div class='stat-card'><p class='lab'>Total sales</p><p class='val' style='color:#3f7d4f'>${money(sales)}</p><p class='sub'>${list.length-unsold.length} sold</p></div></div>
 <div class='chips' style='margin-bottom:18px'><span class='mlab'>Added by</span>${em.map(x=>`<button class='chip ${S.prodEmpFilter===x?'on':''}' onclick="S.prodEmpFilter='${jsq(x)}';render()">${esc(x)}</button>`).join('')}</div>
-<div class='panel'><div class='thead g-prod'><span>Product</span><span>Category</span><span>Added by</span><span>Price</span><span>Date</span><span style='text-align:right'>Actions</span></div>
+<div class='panel'><div class='thead g-prod'><span>Product</span><span>Category</span><span>Added by</span><span>Price</span><span>Sold for</span><span>Date</span><span style='text-align:right'>Actions</span></div>
 ${list.length?list.map(p=>`<div class='trow g-prod'>
 <div class='cell'><div class='thumb'>${p.photo_url?`<img src='${p.photo_url}'>`:''}</div><div style='min-width:0'><p class='nm'>${esc(p.name)}</p>${p.updated_at?`<p class='ed'>edited</p>`:''}</div></div>
 <span><span class='cat-chip'>${esc(p.category)}</span></span>
 <span class='c-dim'><span class='av-sm'>${inits(...String(p.employee).split(' '))}</span>${esc(p.employee)}</span>
-<span class='c-price'>${money(p.price)}</span><span class='c-date'>${fmtDate(new Date(p.created_at).getTime())}</span>
-<div style='display:flex;gap:8px;justify-content:flex-end'><button class='act-btn' onclick="openEditProd('${p.id}')">${IC.edit}</button>
+<span class='c-price'>${money(p.price)}</span>
+<span>${p.sold_at?`<span class='c-green'>${money(p.sold_price)}</span>`:`<span class='c-dim'>—</span>`}</span>
+<span class='c-date'>${fmtDate(new Date(p.created_at).getTime())}</span>
+<div style='display:flex;gap:8px;justify-content:flex-end'>
+${p.sold_at?`<button class='act-btn' title='Undo sale' onclick="unsellProd('${p.id}')">${IC.chev}</button>`:''}
+<button class='act-btn' onclick="openEditProd('${p.id}')">${IC.edit}</button>
 <button class='act-btn danger' onclick="S.prodConfirmId='${p.id}';render()">${IC.trash}</button></div></div>`).join('')
 :`<div class='empty'>No products yet. Staff add them from "My products" in the capture app.</div>`}</div>`;}
 
@@ -484,12 +507,21 @@ ${S.deleteRequests.map(d=>`<div class='trow g-req'>
 
 function settings(){
   const c={};S.purchases.forEach(r=>{c[r.category]=(c[r.category]||0)+1;});
+  const rc={};S.employees.forEach(e=>{rc[e.role]=(rc[e.role]||0)+1;});
   return `<div class='set-col'>
 <div class='card'><h2>Shop</h2><p class='sub'>Name and logo shown across the console and the staff app.</p>
 <label class='m-label'>Shop name</label><div class='row-in'><input id='shopNameIn' value='${esc(S.shopName)}' onkeydown="if(event.key==='Enter')saveShopName()"><button class='mini-btn' onclick='saveShopName()'>Save</button></div>
 <label class='m-label' style='margin-top:18px'>Company logo</label>
 <div style='display:flex;align-items:center;gap:14px'>${logo(64)}<button class='mini-btn' onclick='pickLogo()'>Upload new logo</button>${S.logoUrl?`<button class='mini-cancel' onclick='removeLogo()'>Remove</button>`:''}</div>
 <p class='note'>Square images look best. Replaces the flower mark on both apps.</p></div>
+
+<div class='card'><h2>Staff roles</h2><p class='sub'>Roles you can assign to employees. Renaming a role updates everyone who has it; removing one moves them to the default.</p>
+${S.roles.map(r=>`<div class='list-row'>${S.roleEditId===r.id
+?`<div class='inline-edit'><input id='roleEditIn' value='${esc(r.name)}' onkeydown="if(event.key==='Enter')saveRole();if(event.key==='Escape'){S.roleEditId=null;render()}"><button class='mini-btn' onclick='saveRole()'>Save</button><button class='mini-cancel' onclick='S.roleEditId=null;render()'>Cancel</button></div>`
+:`<span class='nm'>${esc(r.name)}${r.is_default?` <span class='def-pill'>Default</span>`:''}</span><span class='cnt'>${rc[r.name]||0} staff</span>
+<button class='act-btn' onclick="editRole('${r.id}')">${IC.edit}</button>
+${r.is_default?'':`<button class='act-btn danger' onclick="delRole('${r.id}')">${IC.trash}</button>`}`}</div>`).join('')}
+<div class='row-in' style='margin-top:14px'><input id='newRole' placeholder='New role name…' onkeydown="if(event.key==='Enter')addRole()"><button class='mini-btn' onclick='addRole()'>${IC.plus} Add</button></div></div>
 
 <div class='card'><h2>Sale categories</h2><p class='sub'>Used when staff register a sale. Renaming updates every existing purchase; a category in use can't be deleted.</p>
 ${S.categories.map(x=>`<div class='list-row'>${S.catEditId===x.id
@@ -517,7 +549,7 @@ function empModal(){const f=S.ef;return `<div class='modal-wrap'><div class='scr
 <div class='full'><label class='m-label'>Email</label><input class='m-in' id='efEmail' type='email' value='${esc(f.email)}'></div>
 <div><label class='m-label'>Phone</label><input class='m-in' id='efPhone' value='${esc(f.phone)}'></div>
 <div><label class='m-label'>Passkey (4–6 digits)</label><input class='m-in mono' id='efCode' inputmode='numeric' maxlength='6' value='${esc(f.code)}' placeholder='${S.empEditingId?'Unchanged':''}'></div>
-<div><label class='m-label'>Role</label><div class='sel'><select class='m-in' id='efRole'><option${f.role==='Employee'?' selected':''}>Employee</option><option${f.role==='Manager'?' selected':''}>Manager</option></select>${IC.car}</div></div>
+<div><label class='m-label'>Role</label><div class='sel'><select class='m-in' id='efRole'>${roleNames().map(r=>`<option${f.role===r?' selected':''}>${esc(r)}</option>`).join('')}</select>${IC.car}</div></div>
 <div><label class='m-label'>Status</label><div class='sel'><select class='m-in' id='efStatus'><option${f.status==='Active'?' selected':''}>Active</option><option${f.status==='Inactive'?' selected':''}>Inactive</option></select>${IC.car}</div></div></div>
 <div class='m-err'>${S.efError?`<p>${esc(S.efError)}</p>`:''}</div>
 <div class='m-btns'><button class='m-cancel' onclick='closeEmp()'>Cancel</button><button class='m-save' onclick='saveEmp()'>${S.empEditingId?'Save changes':'Add user'}</button></div></div></div>`;}
@@ -534,7 +566,7 @@ function prodModal(){const f=S.pf2;return `<div class='modal-wrap'><div class='s
 function confirmModal(title,text,onYes,yesLabel){return `<div class='modal-wrap' style='z-index:70'><div class='scrim' onclick='S.empConfirmId=null;S.prodConfirmId=null;render()'></div>
 <div class='confirm'><h2>${title}</h2><p>${text}</p>
 <div class='m-btns' style='margin-top:0'><button class='m-cancel' style='padding:13px' onclick='S.empConfirmId=null;S.prodConfirmId=null;render()'>Cancel</button>
-<button class='c-remove' onclick='${onYes}'>${yesLabel}</button></div></div></div>`;}
+<button class='c-remove' onclick="${onYes}">${yesLabel}</button></div></div></div>`;}
 
 function slideOver(){
   const r=S.purchases.find(x=>x.id===S.detailId);if(!r)return '';
@@ -579,7 +611,7 @@ ${S.tab==='employees'?`<button class='add-btn' onclick='openAddEmp()'>${IC.plus}
     if(S.prodModalOpen)h+=prodModal();
     if(S.empConfirmId){const e=S.employees.find(x=>x.id===S.empConfirmId);
       h+=confirmModal('Remove '+esc(e?e.first_name+' '+e.last_name:'')+'?','Their passkey stops working immediately. Purchases they logged are kept.','confirmEmpDelete()','Remove user');}
-    if(S.prodConfirmId){h+=confirmModal('Delete this product?','It is removed from the shared catalogue for everyone.',`delProd('${S.prodConfirmId}')`,'Delete product');}
+    if(S.prodConfirmId){h+=confirmModal('Delete this product?','It is removed from the shared catalogue for everyone.',`delProd(&#39;${S.prodConfirmId}&#39;)`,'Delete product');}
     if(S.detailOpen)h+=slideOver();
   }
   if(S.toast)h+=`<div class='toast'>${IC.check}${esc(S.toast)}</div>`;
