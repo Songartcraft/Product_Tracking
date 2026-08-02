@@ -17,6 +17,20 @@ function photoList(x) {
   return [];
 }
 
+// Any incoming base64 image is pushed to R2 and replaced by its public URL, so
+// image bytes never land in Postgres. If R2 is unset or a single upload fails we
+// keep the original value, which keeps saving a purchase working regardless.
+async function toCloud(list, folder) {
+  if (!R2.isEnabled()) return list;
+  const out = [];
+  for (const photo of list) {
+    if (!R2.isDataUrl(photo)) { out.push(photo); continue; }
+    try { out.push(await R2.putDataUrl(photo, folder)); }
+    catch (e) { out.push(photo); }
+  }
+  return out;
+}
+
 function requireSession(req, res) {
   const s = readSession(req);
   if (!s) { fail(res, 401, 'Not signed in'); return null; }
@@ -71,7 +85,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ admin: { id: admin.id, email: admin.email } });
     }
 
-    /* ---------- uploads: presigned R2 PUT links ---------- */
+    /* ---------- uploads: presigned R2 PUT links (direct-from-phone option) ---------- */
     if (a === 'uploads' && b === 'sign' && m === 'POST') {
       const s = requireSession(req, res); if (!s) return;
       if (!R2.isEnabled()) return fail(res, 503, 'Photo storage is not configured yet.');
@@ -128,7 +142,7 @@ module.exports = async (req, res) => {
         const x = body(req);
         if (!x.category) return fail(res, 400, 'Please choose a category before saving.');
         if (!(Number(x.price) > 0)) return fail(res, 400, 'Enter a price greater than zero.');
-        const photos = photoList(x);
+        const photos = await toCloud(photoList(x), 'purchases');
         const purchase = await rpc('create_purchase', {
           photo_url: photos[0] || '', photo_path: '', category: x.category,
           price: String(Number(x.price)),
@@ -136,7 +150,7 @@ module.exports = async (req, res) => {
           payment: x.payment === 'Online' ? 'Online' : 'Cash',
           note: (x.note || '').trim(), maker_id: x.maker_id, employee_id: s.id,
         });
-        if (photos.length > 1 && purchase && purchase.id) {
+        if (photos.length && purchase && purchase.id) {
           try { await rpc4('set_purchase_photos', { id: purchase.id, photos }); } catch (e) {}
         }
         return res.status(200).json({ purchase });
@@ -159,7 +173,7 @@ module.exports = async (req, res) => {
         if (x.maker_id !== undefined) payload.maker_id = x.maker_id;
 
         const hasPhotos = x.photos !== undefined || x.photo_url !== undefined;
-        const photos = photoList(x);
+        const photos = hasPhotos ? await toCloud(photoList(x), 'purchases') : [];
         if (hasPhotos) payload.photo_url = photos[0] || '';
 
         const purchase = await rpc('update_purchase', payload);
@@ -188,8 +202,9 @@ module.exports = async (req, res) => {
         const name = String(x.name || '').trim();
         if (!name) return fail(res, 400, 'Give the product a name before saving.');
         if (!(Number(x.price) > 0)) return fail(res, 400, 'Enter a price greater than zero.');
+        const photo = (await toCloud([x.photo_url || ''], 'products'))[0] || '';
         const product = await rpc3('create_product', {
-          photo_url: x.photo_url || '', name, price: String(Number(x.price)),
+          photo_url: photo, name, price: String(Number(x.price)),
           note: (x.note || '').trim(), category_id: x.category_id || '',
           employee_id: s.t === 'staff' ? s.id : (x.employee_id || ''),
         });
@@ -230,7 +245,7 @@ module.exports = async (req, res) => {
         }
         if (x.note !== undefined) payload.note = (x.note || '').trim();
         if (x.category_id !== undefined) payload.category_id = x.category_id || '';
-        if (x.photo_url !== undefined) payload.photo_url = x.photo_url || '';
+        if (x.photo_url !== undefined) payload.photo_url = (await toCloud([x.photo_url || ''], 'products'))[0] || '';
         await rpc3('update_product', payload);
         return res.status(200).json({ ok: true });
       }
@@ -516,10 +531,7 @@ module.exports = async (req, res) => {
         if (x.logo_url !== undefined) {
           let logo = String(x.logo_url || '');
           if (logo && !/^data:image\//.test(logo) && !/^https:\/\//.test(logo)) return fail(res, 400, 'Invalid image');
-          // Push the logo to R2 too, so the DB never holds image bytes
-          if (logo && R2.isDataUrl(logo) && R2.isEnabled()) {
-            try { logo = await R2.putDataUrl(logo, 'branding'); } catch (e) {}
-          }
+          if (logo && R2.isDataUrl(logo)) logo = (await toCloud([logo], 'branding'))[0];
           if (logo.length > 400000) return fail(res, 400, 'Image too large — pick a smaller one.');
           await rpc2('set_logo', { value: logo });
           out.logo_url = logo;
