@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Move photos to cloud storage</title>
+<link href='https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif&display=swap' rel='stylesheet'>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#e7ded2;font-family:'Hanken Grotesk',-apple-system,sans-serif;color:#2b2622;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:520px;background:#f7f4ef;border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(60,45,30,.18)}
+h1{margin:0 0 6px;font-family:'Instrument Serif',Georgia,serif;font-size:32px;font-weight:400}
+.sub{margin:0 0 26px;font-size:14.5px;color:#9a9088;line-height:1.5}
+.stat{background:#fff;border-radius:16px;padding:20px;margin-bottom:18px;display:flex;gap:10px}
+.stat .col{flex:1}
+.stat .l{margin:0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#a89e92;font-weight:700}
+.stat .v{margin:6px 0 0;font-family:'Instrument Serif',serif;font-size:32px;line-height:1}
+.stat .v.pink{color:#d24d84}
+.stat .v.green{color:#3f7d4f}
+.bar{height:10px;border-radius:99px;background:#e4ddd3;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:#d24d84;width:0;transition:width .35s ease}
+button{width:100%;padding:16px;border:none;border-radius:14px;background:#d24d84;color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(210,77,132,.3);font-family:inherit}
+button:disabled{background:#e5ddd1;color:#a89e92;box-shadow:none;cursor:default}
+.log{margin-top:18px;font-size:13.5px;color:#6b625a;line-height:1.6;max-height:190px;overflow-y:auto}
+.log div{padding:3px 0}
+.ok{color:#3f7d4f;font-weight:700}
+.err{color:#c0392b;font-weight:700}
+a{color:#d24d84;font-weight:700;text-decoration:none}
+.foot{margin-top:22px;font-size:13px;color:#a89e92}
+</style>
+</head>
+<body>
+<div class='card'>
+<h1>Move photos to cloud storage</h1>
+<p class='sub'>This copies photos out of the database and into Cloudflare R2, then points each record at its new address. Safe to stop and restart — nothing is deleted, and anything already moved is skipped.</p>
+
+<div class='stat'>
+<div class='col'><p class='l'>Left to move</p><p class='v' id='left'>—</p></div>
+<div class='col'><p class='l'>Moved now</p><p class='v green' id='done'>0</p></div>
+<div class='col'><p class='l'>Status</p><p class='v pink' id='state' style='font-size:19px;padding-top:9px'>Ready</p></div>
+</div>
+
+<div class='bar'><i id='bar'></i></div>
+<button id='go'>Start moving photos</button>
+<div class='log' id='log'></div>
+<p class='foot'>Signed in as admin? If this says "Admin only", open <a href='/admin'>the admin console</a>, log in, then come back.</p>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let total=0,moved=0,running=false;
+
+function say(msg,cls){const d=document.createElement('div');if(cls)d.className=cls;d.textContent=msg;
+  $('#log').prepend(d);}
+
+async function call(path,opts){
+  const r=await fetch(path,{credentials:'same-origin',headers:{'content-type':'application/json'},...opts});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('Request failed ('+r.status+')'));
+  return j;
+}
+
+async function check(){
+  try{
+    const d=await call('/api/admin/migrate-photos');
+    total=d.pending||0;
+    $('#left').textContent=total;
+    if(!total){$('#state').textContent='All done';$('#go').disabled=true;$('#bar').style.width='100%';
+      say('Nothing left to move — every photo is already in cloud storage.','ok');}
+  }catch(e){
+    $('#state').textContent='Error';
+    say(e.message,'err');
+    $('#go').disabled=true;
+  }
+}
+
+async function run(){
+  if(running)return;
+  running=true;$('#go').disabled=true;$('#state').textContent='Working';
+  const start=total;
+  try{
+    for(;;){
+      const d=await call('/api/admin/migrate-photos',{method:'POST',body:JSON.stringify({batch:4})});
+      moved+=d.moved||0;
+      $('#done').textContent=moved;
+      $('#left').textContent=d.remaining;
+      if(start>0)$('#bar').style.width=Math.round(((start-d.remaining)/start)*100)+'%';
+      if(d.moved)say('Moved '+d.moved+' photo'+(d.moved===1?'':'s')+' — '+d.remaining+' record'+(d.remaining===1?'':'s')+' left');
+      (d.errors||[]).forEach(e=>say(e,'err'));
+      if(d.done){$('#state').textContent='All done';$('#bar').style.width='100%';
+        say('Finished. All photos now live in cloud storage.','ok');break;}
+      if(!d.moved&&!d.purchases&&!d.products){say('Stopped — nothing moved on the last pass.','err');break;}
+      await new Promise(r=>setTimeout(r,250));
+    }
+  }catch(e){
+    $('#state').textContent='Error';
+    say(e.message,'err');
+    $('#go').disabled=false;
+    $('#go').textContent='Try again';
+  }
+  running=false;
+}
+
+$('#go').addEventListener('click',run);
+check();
+</script>
+</body>
+</html>
