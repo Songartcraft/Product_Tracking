@@ -65,6 +65,7 @@ button,input,select,textarea{font-family:inherit}
 .c-price{margin:0 4px 4px;font-size:13px;color:#d24d84;font-weight:600}
 .c-meta{margin:0 4px 4px;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:#9a9088;font-weight:600}
 .sold-tag{position:absolute;top:14px;left:14px;background:#3f7d4f;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;box-shadow:0 2px 6px rgba(30,22,16,.25)}
+.count-tag{position:absolute;top:8px;right:8px;background:rgba(30,22,16,.66);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;display:flex;align-items:center;gap:4px}
 .empty{text-align:center;padding:32px 20px;color:#a89e92}
 .empty p{margin:0;font-size:14px}
 .nav{position:absolute;left:0;right:0;bottom:0;height:82px;background:#fffdf9;border-top:1px solid #ece6dd;display:flex;align-items:flex-start;padding-top:10px}
@@ -81,16 +82,28 @@ button,input,select,textarea{font-family:inherit}
 .cap-off p{margin:0;font-size:14px;max-width:250px}
 .cap-guide{position:absolute;inset:22px;border-radius:20px;pointer-events:none;box-shadow:0 0 0 2000px rgba(20,16,13,.18);border:1px solid rgba(255,255,255,.25)}
 .cap-x{position:absolute;top:16px;left:16px;width:42px;height:42px;border-radius:50%;border:none;background:rgba(20,16,13,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.cap-bar{background:#1a1613;padding:22px 20px 30px;display:flex;align-items:center;justify-content:space-around}
-.cap-up{border:none;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:76px}
+.cap-strip{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 14px;overflow-x:auto;background:linear-gradient(to top,rgba(20,16,13,.8),rgba(20,16,13,0))}
+.cap-strip .sh{position:relative;width:56px;height:56px;border-radius:10px;overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,.7)}
+.cap-strip .sh img{width:100%;height:100%;object-fit:cover}
+.cap-strip .sh button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(20,16,13,.75);color:#fff;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cap-bar{background:#1a1613;padding:18px 20px 28px;display:flex;align-items:center;justify-content:space-between}
+.cap-up{border:none;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:78px}
 .cap-up span{font-size:11px;font-weight:700}
 .shutter{width:78px;height:78px;border-radius:50%;border:5px solid #fff;background:#d24d84;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.cap-done{width:78px;border:none;background:#3f7d4f;color:#fff;padding:12px 10px;border-radius:14px;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.cap-done:disabled{background:rgba(255,255,255,.14);color:rgba(255,255,255,.5);cursor:default}
 .cap-gallery{background:rgba(255,255,255,.14);border:none;color:#fff;padding:12px 16px;border-radius:14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .head{display:flex;align-items:center;gap:6px;padding:16px 12px 8px}
 .back{width:42px;height:42px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .head h1{margin:0;font-size:19px;font-weight:800}
 .form{flex:1;overflow-y:auto;padding:8px 20px 30px}
-.pcard{display:flex;gap:14px;align-items:center;background:#fff;border-radius:18px;padding:12px;box-shadow:0 2px 10px rgba(60,45,30,.06);margin-bottom:22px}
+.pstrip{display:flex;gap:10px;overflow-x:auto;padding:4px 0 10px}
+.pstrip .it{position:relative;width:82px;height:82px;border-radius:14px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(60,45,30,.08)}
+.pstrip .it img{width:100%;height:100%;object-fit:cover}
+.pstrip .it button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(30,22,16,.72);color:#fff;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pstrip .add{width:82px;height:82px;border-radius:14px;border:2px dashed #e0d7ca;background:#fffdf9;color:#a89e92;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.pcount{margin:0 0 10px;font-size:13px;color:#9a9088;font-weight:600}
+.pcard{display:flex;gap:14px;align-items:center;background:#fff;border-radius:18px;padding:12px;box-shadow:0 2px 10px rgba(60,45,30,.06);margin-bottom:16px}
 .pcard .t{width:72px;height:72px;border-radius:12px;overflow:hidden;flex-shrink:0}
 .pcard .t img{width:100%;height:100%;object-fit:cover}
 .pcard .t1{margin:0;font-size:14px;font-weight:700}
@@ -134,6 +147,7 @@ button,input,select,textarea{font-family:inherit}
 .row{display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:16px;padding:12px;box-shadow:0 2px 8px rgba(60,45,30,.05);cursor:pointer;text-align:left;width:100%}
 .row .t{position:relative;width:56px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0}
 .row .t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.row .t .n2{position:absolute;bottom:2px;right:2px;background:rgba(30,22,16,.7);color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:999px}
 .row .mid{flex:1;min-width:0}
 .row .n{margin:0;font-size:15px;font-weight:700}
 .row .m{margin:3px 0 0;font-size:12.5px;color:#9a9088}
@@ -143,9 +157,13 @@ button,input,select,textarea{font-family:inherit}
 .row .q{margin:2px 0 0;font-size:12px;color:#b3aa9f}
 .cat-chip{font-size:11.5px;font-weight:700;color:#a83168;background:#fbe4ef;padding:3px 9px;border-radius:999px;display:inline-block;margin-top:4px}
 .sold-chip{font-size:11.5px;font-weight:700;color:#3f7d4f;background:#e4f1e6;padding:3px 9px;border-radius:999px;display:inline-block;margin-top:4px;margin-left:4px}
-.det-photo{width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;margin-bottom:22px;position:relative}
+.det-photo{width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;margin-bottom:12px;position:relative}
 .det-photo img{width:100%;height:100%;object-fit:cover}
 .det-photo .np{font-family:ui-monospace,monospace;font-size:12px;color:#b5a894}
+.dthumbs{display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:4px}
+.dthumbs button{width:60px;height:60px;border-radius:12px;overflow:hidden;flex-shrink:0;border:2px solid transparent;background:none;padding:0;cursor:pointer}
+.dthumbs button.on{border-color:#d24d84}
+.dthumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .det-h{text-align:center;margin-bottom:24px}
 .det-h .c{margin:0;font-size:14px;color:#9a9088;font-weight:600}
 .det-h .p{margin:6px 0 0;font-family:'Instrument Serif',serif;font-size:44px;line-height:1;color:#d24d84}
@@ -213,20 +231,19 @@ button,input,select,textarea{font-family:inherit}
 </head>
 <body>
 <div id='frame'></div>
-<!-- camera input: 'capture' forces the camera on phones -->
 <input type='file' accept='image/*' capture='environment' id='fileIn' style='display:none'>
-<!-- gallery input: NO 'capture' attribute, so phones open the photo library -->
-<input type='file' accept='image/*' id='galleryIn' style='display:none'>
+<input type='file' accept='image/*' multiple id='galleryIn' style='display:none'>
 <input type='file' accept='image/*' id='prodIn' style='display:none'>
 <input type='file' accept='image/*' capture='environment' id='prodCamIn' style='display:none'>
 <canvas id='canvas' style='display:none'></canvas>
 <script>
 let SHOP='Song Art & Craft',LOGO='',CATS=['Glass Flower','Glass Petals','Glass Artifact'],PCATS=[],REQD=new Set();
 const CUR='£';
+const MAXPHOTOS=8;
 const S={booted:false,employee:null,screen:'gate',pin:'',codeError:'',shake:false,menuOpen:false,
-makers:[],records:[],products:[],draftPhoto:null,
+makers:[],records:[],products:[],draftPhotos:[],
 form:{category:'',makerId:'',price:'',qty:1,payment:'Cash',note:''},
-editingId:null,detailId:null,backTo:'records',confirmDelete:false,
+editingId:null,detailId:null,backTo:'records',confirmDelete:false,photoIdx:0,
 filter:'All',makerFilter:'All',prodFilter:'All',prodBackTo:'myProducts',
 prodForm:null,prodEditingId:null,prodPhoto:null,
 productId:null,sellOpen:false,sellPrice:'',confirmProdDelete:false,
@@ -253,7 +270,9 @@ function cfg(d){
   if(d.logo_url!==undefined)LOGO=d.logo_url||'';
   if(d.delete_requests)REQD=new Set(d.delete_requests.map(x=>x.purchase_id));
 }
-function mapP(p){return{id:p.id,photo:p.photo_url||null,category:p.category,price:Number(p.price),qty:p.quantity,
+function mapP(p){
+  const list=Array.isArray(p.photos)&&p.photos.length?p.photos:(p.photo_url?[p.photo_url]:[]);
+  return{id:p.id,photo:list[0]||null,photos:list,category:p.category,price:Number(p.price),qty:p.quantity,
  payment:p.payment,note:p.note||'',makerId:p.maker_id,maker:(p.makers&&p.makers.name)||SHOP,
  employee:p.employees?(p.employees.first_name+' '+p.employees.last_name):'—',
  ts:new Date(p.created_at).getTime(),updatedTs:p.updated_at?new Date(p.updated_at).getTime():null,
@@ -288,32 +307,48 @@ async function attempt(){
   checking=false;S.busy=false;render();
 }
 async function signOut(){try{await api('logout',{method:'POST'})}catch(e){}
-  stopCam();Object.assign(S,{employee:null,screen:'gate',pin:'',menuOpen:false,records:[],products:[],draftPhoto:null,editingId:null,detailId:null});render();}
+  stopCam();Object.assign(S,{employee:null,screen:'gate',pin:'',menuOpen:false,records:[],products:[],draftPhotos:[],editingId:null,detailId:null});render();}
 
-async function startCapture(){S.menuOpen=false;S.editingId=null;S.screen='capture';render();
+async function startCapture(){S.menuOpen=false;S.screen='capture';render();
   try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
     const v=$('#vid');if(v){v.srcObject=stream;const o=$('#capOff');if(o)o.style.display='none';}
   }catch(e){stream=null;}}
+function newSale(){S.editingId=null;S.draftPhotos=[];startCapture();}
 function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}}
 function shot(){
+  if(S.draftPhotos.length>=MAXPHOTOS)return notify('Up to '+MAXPHOTOS+' photos per sale');
   if(stream){const v=$('#vid'),c=$('#canvas');const w=v.videoWidth,h=v.videoHeight;
     if(w){const s=Math.min(1,1280/Math.max(w,h));c.width=Math.round(w*s);c.height=Math.round(h*s);
-      c.getContext('2d').drawImage(v,0,0,c.width,c.height);S.draftPhoto=c.toDataURL('image/jpeg',.82);stopCam();toForm();return;}}
+      c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+      S.draftPhotos.push(c.toDataURL('image/jpeg',.82));render();return;}}
   document.getElementById('fileIn').click();}
 function openGallery(){document.getElementById('galleryIn').click();}
+function doneCapture(){stopCam();toForm();}
+function dropShot(i){S.draftPhotos.splice(i,1);render();}
 function scaleImg(file,cb){const img=new Image();
   img.onload=()=>{const c=$('#canvas');const s=Math.min(1,1280/Math.max(img.width,img.height));
     c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.82));};
   img.src=URL.createObjectURL(file);}
-function onFile(ev){const f=ev.target.files[0];if(!f)return;scaleImg(f,u=>{S.draftPhoto=u;stopCam();toForm();});ev.target.value='';}
+function scaleMany(files,cb){const out=[];let i=0;
+  const next=()=>{if(i>=files.length)return cb(out);scaleImg(files[i++],u=>{out.push(u);next();});};next();}
+function onFile(ev){
+  const fs=Array.from(ev.target.files||[]);ev.target.value='';
+  if(!fs.length)return;
+  const room=MAXPHOTOS-S.draftPhotos.length;
+  if(room<=0)return notify('Up to '+MAXPHOTOS+' photos per sale');
+  const use=fs.slice(0,room);
+  S.busy=true;S.busyMsg=use.length>1?'Adding photos…':'Adding photo…';render();
+  scaleMany(use,arr=>{S.draftPhotos=S.draftPhotos.concat(arr);S.busy=false;render();
+    if(fs.length>room)notify('Added '+room+' — limit is '+MAXPHOTOS);});
+}
 function onProdFile(ev){const f=ev.target.files[0];if(!f)return;scaleImg(f,u=>{S.prodPhoto=u;render();});ev.target.value='';}
 function cancelCap(){stopCam();S.screen=S.editingId?'detail':'home';render();}
 
 function defMaker(){const d=S.makers.find(m=>m.is_default);return d?d.id:(S.makers[0]&&S.makers[0].id)||'';}
 function toForm(){if(!S.editingId)S.form={category:'',makerId:defMaker(),price:'',qty:1,payment:'Cash',note:''};S.screen='form';render();}
 function editRecord(){const r=S.records.find(x=>x.id===S.detailId);if(!r)return;
-  S.editingId=r.id;S.draftPhoto=r.photo;
+  S.editingId=r.id;S.draftPhotos=(r.photos||[]).slice();
   S.form={category:r.category,makerId:r.makerId,price:String(r.price),qty:r.qty,payment:r.payment,note:r.note};
   S.screen='form';render();}
 function formBack(){if(S.editingId){S.screen='detail';render();}else{startCapture();}}
@@ -325,12 +360,13 @@ async function submitForm(){
   const editing=S.editingId;
   try{
     const body=JSON.stringify({category:S.form.category,maker_id:S.form.makerId,price:S.form.price,
-      quantity:S.form.qty,payment:S.form.payment,note:S.form.note,photo_url:S.draftPhoto||''});
+      quantity:S.form.qty,payment:S.form.payment,note:S.form.note,photos:S.draftPhotos});
     if(editing){await api('purchases/'+editing,{method:'PATCH',body});await refresh();S.screen='detail';S.editingId=null;S.busy=false;notify('Changes saved');}
-    else{await api('purchases',{method:'POST',body});await refresh();S.draftPhoto=null;S.screen='records';S.busy=false;notify('Purchase saved');}
+    else{await api('purchases',{method:'POST',body});await refresh();S.draftPhotos=[];S.screen='records';S.busy=false;notify('Purchase saved');}
   }catch(e){S.busy=false;showErr(e.message,submitForm);}
 }
-function openDetail(id,from){S.detailId=id;S.backTo=from||'records';S.confirmDelete=false;S.screen='detail';render();}
+function openDetail(id,from){S.detailId=id;S.backTo=from||'records';S.confirmDelete=false;S.photoIdx=0;S.screen='detail';render();}
+function setPhotoIdx(i){S.photoIdx=i;render();}
 async function requestDelete(){
   S.busy=true;S.busyMsg='Sending…';render();
   try{await api('purchases/'+S.detailId+'/delete-request',{method:'POST'});REQD.add(S.detailId);
@@ -403,6 +439,7 @@ box:`<svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='current
 plus:`<svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><path d='M12 5v14M5 12h14'/></svg>`,
 tag:`<svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h9z'/><circle cx='7.5' cy='7.5' r='1.5'/></svg>`,
 img:`<svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='5' width='18' height='14' rx='2'/><path d='M3 15l5-4 4 3 3-3 6 5'/><circle cx='8.5' cy='9.5' r='1.5'/></svg>`,
+imgs:`<svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><rect x='7' y='3' width='14' height='14' rx='2'/><path d='M3 7v12a2 2 0 0 0 2 2h12'/></svg>`,
 check:`<svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#8fd19e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12l5 5 9-11'/></svg>`,
 car:`<svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#9a9088' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>`,
 del:`<svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='#2b2622' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M8 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-5-7z'/><path d='M12 10l4 4M16 10l-4 4'/></svg>`};
@@ -416,7 +453,7 @@ function nav(a){return `<div class='nav'>
 <button class='tab ${a==='home'?'on':''}' onclick="go('home')">${I.home}<span>Home</span></button>
 <div class='gap'></div>
 <button class='tab ${a==='records'?'on':''}' onclick="go('records')">${I.rec}<span>Purchases</span></button>
-<button class='fab' onclick='startCapture()'>${I.cam(28)}</button><span class='fab-lab'>Register Sale</span></div>`;}
+<button class='fab' onclick='newSale()'>${I.cam(28)}</button><span class='fab-lab'>Register Sale</span></div>`;}
 function go(s){S.menuOpen=false;S.screen=s;render();}
 
 function gate(){
@@ -433,7 +470,8 @@ function gate(){
 
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening';}
 function pcard(r,from){return `<button class='card' onclick="openDetail('${r.id}','${from}')">
-<div class='thumb-sq ph'>${r.photo?`<img src='${r.photo}'>`:`<span class='np'>no photo</span>`}</div>
+<div class='thumb-sq ph'>${r.photo?`<img src='${r.photo}'>`:`<span class='np'>no photo</span>`}
+${r.photos&&r.photos.length>1?`<span class='count-tag'>${I.imgs}${r.photos.length}</span>`:''}</div>
 <p class='c-name'>${esc(r.category)}</p><p class='c-price'>${money(r.price*r.qty)}</p>
 <p class='c-meta'>${I.fl(11)}${esc(r.maker)}</p></button>`;}
 function prodCard(p,from){return `<button class='card' onclick="openProduct('${p.id}','${from}')">
@@ -458,18 +496,31 @@ function home(){
 <div class='divider'></div><div class='col'><p class='lab'>Takings</p><p class='num pink'>${money(tk)}</p><p class='sub'>today</p></div></div>
 <div class='sect'><h2>Recent captures</h2><button class='link' onclick="go('records')">See all</button></div>
 ${rec.length?`<div class='grid2'>${rec.map(r=>pcard(r,'home')).join('')}</div>`
-:`<div class='empty'><p>No captures yet. Tap the camera to record your first product.</p></div>`}
+:`<div class='empty'><p>No captures yet. Tap the camera to record your first sale.</p></div>`}
 </div>${nav('home')}</div>`;}
 
-function capture(){return `<div class='cap'><div class='cap-stage'>
+function capture(){
+  const n=S.draftPhotos.length;
+  return `<div class='cap'><div class='cap-stage'>
 <video id='vid' autoplay playsinline muted></video>
-<div class='cap-off' id='capOff'>${I.cam(44)}<p>Tap the shutter to take a photo, or choose one from your gallery below.</p>
+<div class='cap-off' id='capOff'>${I.cam(44)}<p>Tap the shutter for each item, or pick several at once from your gallery.</p>
 <button class='cap-gallery' onclick='openGallery()'>${I.img} Choose from gallery</button></div>
-<div class='cap-guide'></div><button class='cap-x' onclick='cancelCap()'>${I.x('#fff')}</button></div>
+<div class='cap-guide'></div><button class='cap-x' onclick='cancelCap()'>${I.x('#fff')}</button>
+${n?`<div class='cap-strip'>${S.draftPhotos.map((p,i)=>`<div class='sh'><img src='${p}'><button onclick='dropShot(${i})'>&times;</button></div>`).join('')}</div>`:''}
+</div>
 <div class='cap-bar'>
 <button class='cap-up' onclick='openGallery()'>${I.up}<span>Gallery</span></button>
 <button class='shutter' onclick='shot()'></button>
-<div style='width:76px'></div></div></div>`;}
+<button class='cap-done' ${n?'':'disabled'} onclick='doneCapture()'>Done${n?`<span style='font-size:11px;font-weight:600'>${n} photo${n>1?'s':''}</span>`:''}</button>
+</div></div>`;}
+
+function photoStrip(){
+  const n=S.draftPhotos.length;
+  return `<p class='pcount'>${n?`${n} photo${n>1?'s':''} attached`:'No photos yet'} — up to ${MAXPHOTOS}</p>
+<div class='pstrip'>
+${S.draftPhotos.map((p,i)=>`<div class='it'><img src='${p}'><button onclick='dropShot(${i})'>&times;</button></div>`).join('')}
+${n<MAXPHOTOS?`<button class='add' onclick='startCapture()'>${I.cam(20)}Camera</button>
+<button class='add' onclick='openGallery()'>${I.img}Gallery</button>`:''}</div>`;}
 
 function form(){
   const f=S.form;
@@ -477,12 +528,11 @@ function form(){
   const ct=`<option value=''>Select category…</option>`+CATS.map(c=>`<option${f.category===c?' selected':''}>${esc(c)}</option>`).join('');
   return `<div class='screen'><div class='head'><button class='back' onclick='formBack()'>${I.back}</button>
 <h1>${S.editingId?'Edit sale':'Sale details'}</h1></div><div class='form'>
-<div class='pcard'><div class='t ph'>${S.draftPhoto?`<img src='${S.draftPhoto}'>`:''}</div>
-<div style='flex:1'><p class='t1'>${S.draftPhoto?'Photo captured':'No photo'}</p><p class='t2'>Signed in as ${esc(S.employee.name)}</p></div>
-<button class='retake' onclick='startCapture()'>Retake</button></div>
-<div class='pick-row'><button onclick='startCapture()'>${I.cam(17)} Take photo</button>
-<button onclick='openGallery()'>${I.img} From gallery</button></div>
-<label class='lab'>Category</label><div class='selw'><select onchange='S.form.category=this.value;syncBtn()'>${ct}</select>${I.car}</div>
+<div class='pcard'><div class='t ph'>${S.draftPhotos[0]?`<img src='${S.draftPhotos[0]}'>`:''}</div>
+<div style='flex:1'><p class='t1'>${S.draftPhotos.length?S.draftPhotos.length+' photo'+(S.draftPhotos.length>1?'s':''):'No photo'}</p>
+<p class='t2'>Signed in as ${esc(S.employee.name)}</p></div></div>
+${photoStrip()}
+<label class='lab' style='margin-top:16px'>Category</label><div class='selw'><select onchange='S.form.category=this.value;syncBtn()'>${ct}</select>${I.car}</div>
 <label class='lab'>Made by</label><div class='selw'><select onchange='S.form.makerId=this.value'>${mk}</select>${I.car}</div>
 <label class='lab'>Price</label><div class='pricew'><span class='cur'>${CUR}</span>
 <input type='number' inputmode='decimal' placeholder='0.00' value='${esc(f.price)}' oninput='S.form.price=this.value;syncBtn()'></div>
@@ -505,7 +555,7 @@ function records(){
 <div class='chips'>${['All',...CATS].map(c=>`<button class='chip ${S.filter===c?'on':''}' onclick="S.filter='${jsq(c)}';render()">${esc(c)}</button>`).join('')}</div>
 <div class='chips2'><span class='ml'>Made by</span>${mk.map(m=>`<button class='chip ${S.makerFilter===m?'on':''}' onclick="S.makerFilter='${jsq(m)}';render()">${esc(m)}</button>`).join('')}</div>
 ${l.length?`<div class='rows'>${l.map(r=>`<button class='row' onclick="openDetail('${r.id}','records')">
-<div class='t ph'>${r.photo?`<img src='${r.photo}'>`:''}</div>
+<div class='t ph'>${r.photo?`<img src='${r.photo}'>`:''}${r.photos&&r.photos.length>1?`<span class='n2'>${r.photos.length}</span>`:''}</div>
 <div class='mid'><p class='n'>${esc(r.category)}</p><p class='m'>${fmtDate(r.ts)} · ${fmtTime(r.ts)} · ${esc(r.payment)}</p>
 <p class='mk'>${I.fl(13)}Made by ${esc(r.maker)}</p></div>
 <div class='r'><p class='p'>${money(r.price*r.qty)}</p><p class='q'>Qty ${r.qty}</p></div></button>`).join('')}</div>`
@@ -515,6 +565,8 @@ ${l.length?`<div class='rows'>${l.map(r=>`<button class='row' onclick="openDetai
 function detail(){
   const r=S.records.find(x=>x.id===S.detailId);
   if(!r){S.screen='records';return records();}
+  const ph=r.photos&&r.photos.length?r.photos:[];
+  const idx=Math.min(S.photoIdx,Math.max(0,ph.length-1));
   const hist=r.history.length?`<div class='hist'><p class='ht'>Edit history</p><div class='line'>
 <div style='position:relative'><div class='cd'></div><p class='v1'>Current version</p>
 <p class='v2'>${r.updatedTs?fmtDate(r.updatedTs)+', '+fmtTime(r.updatedTs):fmtDate(r.ts)+', '+fmtTime(r.ts)}</p></div>
@@ -522,10 +574,12 @@ ${r.history.map((h,i)=>`<div style='position:relative'><div class='od'></div><di
 <div class='vr'><span class='vl'>Version ${r.history.length-i}</span><span class='vd'>${fmtDate(h.ts)}, ${fmtTime(h.ts)}</span></div>
 <p class='vs'>${esc(h.category)} · ${money(h.price)} · Qty ${h.qty} · ${esc(h.payment)}${h.maker?' · '+esc(h.maker):''}</p></div></div>`).join('')}</div></div>`:'';
   return `<div class='screen'><div class='head'><button class='back' onclick="go(S.backTo)">${I.back}</button><h1>Purchase</h1></div>
-<div class='form'><div class='det-photo ph'>${r.photo?`<img src='${r.photo}'>`:`<span class='np'>no photo captured</span>`}</div>
+<div class='form'><div class='det-photo ph'>${ph.length?`<img src='${ph[idx]}'>`:`<span class='np'>no photo captured</span>`}</div>
+${ph.length>1?`<div class='dthumbs'>${ph.map((p,i)=>`<button class='${i===idx?'on':''}' onclick='setPhotoIdx(${i})'><img src='${p}'></button>`).join('')}</div>`:''}
 <div class='det-h'><p class='c'>${esc(r.category)}</p><p class='p'>${money(r.price*r.qty)}</p></div>
 <div class='info'><div class='r'><span class='k'>Quantity</span><span class='v'>${r.qty}</span></div>
 <div class='r'><span class='k'>Payment</span><span class='v'>${esc(r.payment)}</span></div>
+${ph.length>1?`<div class='r'><span class='k'>Photos</span><span class='v'>${ph.length}</span></div>`:''}
 <div class='r'><span class='k'>Captured by</span><span class='v'>${esc(r.employee)}</span></div>
 <div class='r'><span class='k'>Made by</span><span class='v pink'>${esc(r.maker)}</span></div>
 <div class='r'><span class='k'>Date &amp; time</span><span class='v'>${fmtDate(r.ts)}, ${fmtTime(r.ts)}</span></div></div>
@@ -627,7 +681,7 @@ function drawer(){return `<div class='drawer-wrap'><div class='scrim' onclick='S
 <button class='dx' onclick='S.menuOpen=false;render()'>${I.x('#2b2622')}</button></div>
 <button class='d-item' onclick="go('home')">${I.home}<span>Home</span></button>
 <button class='d-item' onclick="go('records')">${I.rec}<span>Purchases</span></button>
-<button class='d-item pink' onclick='startCapture()'>${I.cam(22)}<span>Register sale</span></button>
+<button class='d-item pink' onclick='newSale()'>${I.cam(22)}<span>Register sale</span></button>
 <button class='d-item' onclick="go('allProducts')">${I.box}<span>All products</span></button>
 <button class='d-item' onclick="go('myProducts')">${I.box}<span>My products</span></button>
 <div style='flex:1'></div>
