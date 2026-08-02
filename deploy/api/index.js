@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const {
   rpc, rpc2, rpc3, rpc4, sha256hex, setSession, clearSession, readSession, fail,
 } = require('./_lib.js');
+const R2 = require('./_r2.js');
 
 const seg = (p) => String(p || '').split('?')[0].split('/').filter(Boolean);
 const body = (req) => (req.body && typeof req.body === 'object' ? req.body : {});
@@ -43,7 +44,7 @@ module.exports = async (req, res) => {
     /* ---------- public ---------- */
     if (a === 'health') {
       const makers = await rpc('list_makers');
-      return res.status(200).json({ ok: true, db: true, makers: (makers || []).length });
+      return res.status(200).json({ ok: true, db: true, makers: (makers || []).length, r2: R2.isEnabled() });
     }
     if (a === 'logout') { clearSession(res); return res.status(200).json({ ok: true }); }
 
@@ -70,6 +71,19 @@ module.exports = async (req, res) => {
       return res.status(200).json({ admin: { id: admin.id, email: admin.email } });
     }
 
+    /* ---------- uploads: presigned R2 PUT links ---------- */
+    if (a === 'uploads' && b === 'sign' && m === 'POST') {
+      const s = requireSession(req, res); if (!s) return;
+      if (!R2.isEnabled()) return fail(res, 503, 'Photo storage is not configured yet.');
+      const x = body(req);
+      const folder = x.folder === 'products' ? 'products' : 'purchases';
+      const contentType = String(x.content_type || 'image/jpeg');
+      const count = Math.min(Math.max(parseInt(x.count, 10) || 1, 1), 12);
+      const links = [];
+      for (let i = 0; i < count; i++) links.push(R2.presignPut(R2.makeKey(folder, contentType), 600));
+      return res.status(200).json({ uploads: links });
+    }
+
     /* ---------- bootstrap ---------- */
     if (a === 'bootstrap') {
       const session = readSession(req);
@@ -91,12 +105,12 @@ module.exports = async (req, res) => {
       try { roles = (await rpc3('list_roles')) || []; } catch (e) {}
 
       if (!session) {
-        return res.status(200).json({ session: null, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories });
+        return res.status(200).json({ session: null, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories, r2: R2.isEnabled() });
       }
       const [makers, purchases] = await Promise.all([rpc('list_makers'), rpc('list_purchases')]);
       let products = [];
       try { products = (await rpc3('list_products')) || []; } catch (e) {}
-      const out = { session, makers, purchases, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories, products, roles };
+      const out = { session, makers, purchases, categories, shop_name: shopName, logo_url: logoUrl, product_categories: productCategories, products, roles, r2: R2.isEnabled() };
       try { out.delete_requests = await rpc2('list_delete_requests'); } catch (e) { out.delete_requests = []; }
       if (session.t === 'admin') {
         out.employees = await rpc('list_employees');
@@ -236,6 +250,77 @@ module.exports = async (req, res) => {
     if (a === 'admin') {
       const s = requireAdmin(req, res); if (!s) return;
       const x = body(req);
+
+      /* one-off migration: base64 photos in Postgres -> R2 object storage.
+         Runs in small batches so it stays inside the serverless time limit.
+         Safe to run repeatedly; already-migrated rows are skipped. */
+      if (b === 'migrate-photos') {
+        if (!R2.isEnabled()) return fail(res, 503, 'R2 is not configured. Set the R2_* environment variables first.');
+
+        if (m === 'GET') {
+          const [purchases, products] = await Promise.all([rpc('list_purchases'), rpc3('list_products').catch(() => [])]);
+          let pending = 0;
+          let photos = 0;
+          (purchases || []).forEach((p) => {
+            const list = Array.isArray(p.photos) && p.photos.length ? p.photos : (p.photo_url ? [p.photo_url] : []);
+            const n = list.filter(R2.isDataUrl).length;
+            if (n) { pending++; photos += n; }
+          });
+          (products || []).forEach((p) => { if (R2.isDataUrl(p.photo_url)) { pending++; photos++; } });
+          return res.status(200).json({ pending, photos });
+        }
+
+        if (m === 'POST') {
+          const batch = Math.min(Math.max(parseInt(x.batch, 10) || 4, 1), 10);
+          let moved = 0;
+          const errors = [];
+
+          const purchases = (await rpc('list_purchases')) || [];
+          const todo = purchases.filter((p) => {
+            const list = Array.isArray(p.photos) && p.photos.length ? p.photos : (p.photo_url ? [p.photo_url] : []);
+            return list.some(R2.isDataUrl);
+          }).slice(0, batch);
+
+          for (const p of todo) {
+            const list = Array.isArray(p.photos) && p.photos.length ? p.photos : (p.photo_url ? [p.photo_url] : []);
+            const next = [];
+            for (const photo of list) {
+              if (!R2.isDataUrl(photo)) { next.push(photo); continue; }
+              try { next.push(await R2.putDataUrl(photo, 'purchases')); moved++; }
+              catch (e) { errors.push(e.message); next.push(photo); }
+            }
+            try { await rpc4('set_purchase_photos', { id: p.id, photos: next }); }
+            catch (e) { errors.push(e.message); }
+          }
+
+          let productsMoved = 0;
+          if (todo.length < batch) {
+            const products = (await rpc3('list_products').catch(() => [])) || [];
+            const pTodo = products.filter((p) => R2.isDataUrl(p.photo_url)).slice(0, batch - todo.length);
+            for (const p of pTodo) {
+              try {
+                const url = await R2.putDataUrl(p.photo_url, 'products');
+                await rpc3('update_product', { id: p.id, photo_url: url });
+                productsMoved++; moved++;
+              } catch (e) { errors.push(e.message); }
+            }
+          }
+
+          const after = (await rpc('list_purchases')) || [];
+          let remaining = after.filter((p) => {
+            const list = Array.isArray(p.photos) && p.photos.length ? p.photos : (p.photo_url ? [p.photo_url] : []);
+            return list.some(R2.isDataUrl);
+          }).length;
+          const afterProducts = (await rpc3('list_products').catch(() => [])) || [];
+          remaining += afterProducts.filter((p) => R2.isDataUrl(p.photo_url)).length;
+
+          return res.status(200).json({
+            moved, purchases: todo.length, products: productsMoved, remaining,
+            done: remaining === 0,
+            errors: errors.slice(0, 3),
+          });
+        }
+      }
 
       if (b === 'employees') {
         if (!c && m === 'POST') {
@@ -429,8 +514,12 @@ module.exports = async (req, res) => {
           out.shop_name = name;
         }
         if (x.logo_url !== undefined) {
-          const logo = String(x.logo_url || '');
-          if (logo && !/^data:image\//.test(logo)) return fail(res, 400, 'Invalid image');
+          let logo = String(x.logo_url || '');
+          if (logo && !/^data:image\//.test(logo) && !/^https:\/\//.test(logo)) return fail(res, 400, 'Invalid image');
+          // Push the logo to R2 too, so the DB never holds image bytes
+          if (logo && R2.isDataUrl(logo) && R2.isEnabled()) {
+            try { logo = await R2.putDataUrl(logo, 'branding'); } catch (e) {}
+          }
           if (logo.length > 400000) return fail(res, 400, 'Image too large — pick a smaller one.');
           await rpc2('set_logo', { value: logo });
           out.logo_url = logo;
