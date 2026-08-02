@@ -36,6 +36,7 @@ async function callRpc(fn, action, payload) {
 const rpc = (action, payload) => callRpc('app_rpc', action, payload);
 const rpc2 = (action, payload) => callRpc('app_rpc2', action, payload);
 const rpc3 = (action, payload) => callRpc('app_rpc3', action, payload);
+const rpc4 = (action, payload) => callRpc('app_rpc4', action, payload);
 
 function sign(value) {
   return crypto.createHmac('sha256', RPC_SECRET + ':cookie').update(value).digest('base64url');
@@ -72,4 +73,4 @@ function fail(res, status, message) {
   res.status(status).json({ error: message });
 }
 
-module.exports = { rpc, rpc2, rpc3, sha256hex, setSession, clearSession, readSession, fail };
+module.exports = { rpc, rpc2, rpc3, rpc4, sha256hex, setSession, clearSession, readSession, fail };
