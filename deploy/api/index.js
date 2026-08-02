@@ -3,11 +3,18 @@
 // vercel.json rewrites /api/(.*) -> /api?path=$1
 const bcrypt = require('bcryptjs');
 const {
-  rpc, rpc2, rpc3, sha256hex, setSession, clearSession, readSession, fail,
+  rpc, rpc2, rpc3, rpc4, sha256hex, setSession, clearSession, readSession, fail,
 } = require('./_lib.js');
 
 const seg = (p) => String(p || '').split('?')[0].split('/').filter(Boolean);
 const body = (req) => (req.body && typeof req.body === 'object' ? req.body : {});
+
+// Accept either a photos[] array or a single photo_url, always return an array
+function photoList(x) {
+  if (Array.isArray(x.photos)) return x.photos.filter((p) => typeof p === 'string' && p);
+  if (x.photo_url) return [x.photo_url];
+  return [];
+}
 
 function requireSession(req, res) {
   const s = readSession(req);
@@ -101,25 +108,32 @@ module.exports = async (req, res) => {
     /* ---------- purchases ---------- */
     if (a === 'purchases') {
       const s = requireSession(req, res); if (!s) return;
+
       if (!b && m === 'POST') {
         if (s.t !== 'staff') return fail(res, 403, 'Only staff can log purchases');
         const x = body(req);
         if (!x.category) return fail(res, 400, 'Please choose a category before saving.');
         if (!(Number(x.price) > 0)) return fail(res, 400, 'Enter a price greater than zero.');
+        const photos = photoList(x);
         const purchase = await rpc('create_purchase', {
-          photo_url: x.photo_url || '', photo_path: '', category: x.category,
+          photo_url: photos[0] || '', photo_path: '', category: x.category,
           price: String(Number(x.price)),
           quantity: String(Math.max(1, parseInt(x.quantity, 10) || 1)),
           payment: x.payment === 'Online' ? 'Online' : 'Cash',
           note: (x.note || '').trim(), maker_id: x.maker_id, employee_id: s.id,
         });
+        if (photos.length > 1 && purchase && purchase.id) {
+          try { await rpc4('set_purchase_photos', { id: purchase.id, photos }); } catch (e) {}
+        }
         return res.status(200).json({ purchase });
       }
+
       if (b && c === 'delete-request' && m === 'POST') {
         await rpc2('create_delete_request', { purchase_id: b, requested_by: s.t === 'staff' ? s.id : '' });
         return res.status(200).json({ ok: true });
       }
       if (b && m === 'GET') return res.status(200).json({ purchase: await rpc('get_purchase', { id: b }) });
+
       if (b && m === 'PATCH') {
         const x = body(req);
         const payload = { id: b, actor: { type: s.t === 'admin' ? 'admin' : 'staff', subject: s.id } };
@@ -129,9 +143,19 @@ module.exports = async (req, res) => {
         if (x.payment !== undefined) payload.payment = x.payment === 'Online' ? 'Online' : 'Cash';
         if (x.note !== undefined) payload.note = (x.note || '').trim();
         if (x.maker_id !== undefined) payload.maker_id = x.maker_id;
-        if (x.photo_url !== undefined) payload.photo_url = x.photo_url || '';
-        return res.status(200).json({ purchase: await rpc('update_purchase', payload) });
+
+        const hasPhotos = x.photos !== undefined || x.photo_url !== undefined;
+        const photos = photoList(x);
+        if (hasPhotos) payload.photo_url = photos[0] || '';
+
+        const purchase = await rpc('update_purchase', payload);
+        if (hasPhotos) {
+          try { await rpc4('set_purchase_photos', { id: b, photos }); } catch (e) {}
+          try { return res.status(200).json({ purchase: await rpc('get_purchase', { id: b }) }); } catch (e) {}
+        }
+        return res.status(200).json({ purchase });
       }
+
       if (b && m === 'DELETE') {
         if (s.t !== 'admin') return fail(res, 403, 'Only the admin can delete. Use Request delete instead.');
         await rpc('delete_purchase', { id: b });
@@ -158,19 +182,16 @@ module.exports = async (req, res) => {
         return res.status(200).json({ product });
       }
 
-      // Mark a product as sold — any signed-in staff member may record a sale
       if (b && c === 'sell' && m === 'POST') {
         const x = body(req);
         if (!(Number(x.sold_price) > 0)) return fail(res, 400, 'Enter a sold price greater than zero.');
         await rpc3('sell_product', {
-          id: b,
-          sold_price: String(Number(x.sold_price)),
+          id: b, sold_price: String(Number(x.sold_price)),
           sold_by: s.t === 'staff' ? s.id : '',
         });
         return res.status(200).json({ ok: true });
       }
 
-      // Undo a sale
       if (b && c === 'unsell' && m === 'POST') {
         await rpc3('unsell_product', { id: b });
         return res.status(200).json({ ok: true });
